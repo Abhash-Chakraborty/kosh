@@ -1,0 +1,36 @@
+---
+en:
+  settings:
+    hostings:
+      show:
+        email: Email
+      mail_server_settings:
+        title: Mail server
+        description: Sure sends password resets, invitations and email confirmations through this server. The password is stored encrypted.
+        env_configured_message: The SMTP_ADDRESS environment variable sets the mail server, so it can't be changed here.
+        address_label: SMTP server
+        address_placeholder: smtp.example.com
+        port_label: Port
+        port_placeholder: "587"
+        username_label: Username
+        password_label: Password
+        password_placeholder: App password or SMTP key
+        tls_label: Implicit TLS
+        tls_description: Turn on for port 465. Leave off for 587, which upgrades to TLS on its own.
+        sender_label: Send from
+        sender_placeholder: sure@example.com
+        sender_env_message: Set by the EMAIL_SENDER environment variable.
+        save: Save mail server
+        send_test: Send a test email
+    mail_servers:
+      not_authorized: Only a super admin can change the mail server.
+      env_managed: The mail server is set by environment variables.
+      update:
+        saved: Mail server saved.
+        invalid_port: The port must be a number from 1 to 65535.
+        invalid_sender: The sender must be an email address.
+      send_test:
+        sent: Test email sent to %{email}.
+        failed: "The test email didn't send: %{error}"
+        not_configured: Add a mail server first.
+        too_many: Too many test emails. Try again in a minute.

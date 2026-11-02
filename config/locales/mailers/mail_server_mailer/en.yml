@@ -1,0 +1,7 @@
+---
+en:
+  mail_server_mailer:
+    test_email:
+      subject: "%{product_name} can send email"
+      heading: Your mail server works
+      body: "%{product_name} sent this from Settings › Self-hosting. Password resets and invitations will go out the same way."
