@@ -23,7 +23,7 @@ class PaymentMessage::ProcessorTest < ActiveSupport::TestCase
     assert_equal BigDecimal("649"), entry.amount
     assert_equal "SWIGGY", entry.name
     assert_equal Date.new(2026, 11, 3), entry.date
-    assert_equal "kosh_messages", entry.source
+    assert_equal "payment_messages", entry.source
   end
 
   test "money in is a negative amount" do

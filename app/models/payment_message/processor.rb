@@ -12,7 +12,7 @@
 #    so the same payee isn't asked about twice.
 class PaymentMessage::Processor
   MERGE_WINDOW = 15.minutes
-  ENTRY_SOURCE = "kosh_messages".freeze
+  ENTRY_SOURCE = "payment_messages".freeze
 
   attr_reader :message
 

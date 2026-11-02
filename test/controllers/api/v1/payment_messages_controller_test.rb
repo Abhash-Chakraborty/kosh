@@ -10,7 +10,7 @@ class Api::V1::PaymentMessagesControllerTest < ActionDispatch::IntegrationTest
     accounts(:depository).update!(message_hints: [ "4821" ])
     Provider::Registry.stubs(:preferred_llm_provider).returns(nil)
 
-    @oauth_app = Doorkeeper::Application.create!(name: "Kosh phone", redirect_uri: "https://example.com/callback", scopes: "read read_write")
+    @oauth_app = Doorkeeper::Application.create!(name: "Phone app", redirect_uri: "https://example.com/callback", scopes: "read read_write")
     @read_token = Doorkeeper::AccessToken.create!(application: @oauth_app, resource_owner_id: @user.id, scopes: "read")
     @write_token = Doorkeeper::AccessToken.create!(application: @oauth_app, resource_owner_id: @user.id, scopes: "read_write")
   end

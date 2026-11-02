@@ -1,7 +1,7 @@
-# Builds the Kosh image for the server (amd64) and ARM machines, and pushes it
-# to ghcr.io/<owner>/kosh as :main and :sha-<commit>. Upstream's publish.yml
+# Builds the image for my server (amd64) and ARM machines, and pushes it
+# to ghcr.io/<owner>/sure as :main and :sha-<commit>. Upstream's publish.yml
 # keeps Sure's release channels and stays off in this fork.
-name: Kosh image
+name: Server image
 
 on:
   workflow_dispatch:
@@ -18,12 +18,12 @@ permissions:
   packages: write
 
 concurrency:
-  group: kosh-image
+  group: server-image
   cancel-in-progress: true
 
 env:
   # Registry names must be lower case; the owner here isn't.
-  IMAGE: ghcr.io/abhash-chakraborty/kosh
+  IMAGE: ghcr.io/abhash-chakraborty/sure
 
 jobs:
   build:
