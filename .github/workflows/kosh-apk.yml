@@ -1,0 +1,107 @@
+name: Kosh sideload APK
+
+# Builds the sideload APK (SMS + notification auto-entry) for Kosh. The Play
+# build and its workflows are untouched: the extra permissions only exist when
+# KOSH_SIDELOAD=1 (see mobile/android/app/build.gradle).
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'r2-*'
+    paths:
+      - 'mobile/**'
+      - '.github/workflows/kosh-apk.yml'
+
+concurrency:
+  group: kosh-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  sideload-apk:
+    name: Test and build sideload APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Java
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: '3.32.4'
+          channel: 'stable'
+          cache: true
+
+      - name: Get dependencies
+        working-directory: mobile
+        run: flutter pub get
+
+      - name: Copy Sure icons from public/
+        run: cp public/android-chrome-512x512.png mobile/assets/icon/app_icon.png
+
+      - name: Generate app icons
+        working-directory: mobile
+        run: flutter pub run flutter_launcher_icons
+
+      - name: Analyze code
+        working-directory: mobile
+        run: flutter analyze --no-fatal-infos
+
+      - name: Run tests
+        working-directory: mobile
+        run: flutter test
+
+      - name: Set up release key (optional)
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "No release key: the APK is signed with the runner's debug key."
+            exit 0
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > mobile/android/app/upload-keystore.jks
+          {
+            echo "storePassword=$KEY_STORE_PASSWORD"
+            echo "keyPassword=$KEY_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "storeFile=upload-keystore.jks"
+          } > mobile/android/key.properties
+
+      - name: Build sideload APK
+        working-directory: mobile
+        env:
+          KOSH_SIDELOAD: '1'
+        run: flutter build apk --release
+
+      - name: Name the APK
+        id: apk
+        run: |
+          set -euo pipefail
+          version="$(sed -n 's/^version: *//p' mobile/pubspec.yaml)"
+          name="kosh-sideload-${version%%+*}-${GITHUB_SHA::7}.apk"
+          cp mobile/build/app/outputs/flutter-apk/app-release.apk "$name"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: kosh-sideload-apk
+          path: ${{ steps.apk.outputs.name }}
+          retention-days: 30
+          if-no-files-found: error
