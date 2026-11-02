@@ -6,8 +6,8 @@ void main() {
     test('masks account, card and phone numbers to XX + last 4', () {
       expect(AccountNumberMasker.mask('A/c 50100123456789 debited'),
           'A/c XX6789 debited');
-      expect(AccountNumberMasker.mask('Card 4111111111111111 used'),
-          'Card XX1111 used');
+      expect(AccountNumberMasker.mask('Card 0000000000004321 used'),
+          'Card XX4321 used');
       expect(AccountNumberMasker.mask('from 9876543210'), 'from XX3210');
       expect(AccountNumberMasker.mask('ref 123456'), 'ref XX3456');
       expect(AccountNumberMasker.mask('Ref 4123456789012'), 'Ref XX9012');
