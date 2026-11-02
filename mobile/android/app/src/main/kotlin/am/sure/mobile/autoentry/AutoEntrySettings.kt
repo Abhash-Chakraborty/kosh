@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 
 /** Settings the receivers read even when the Flutter UI isn't running. */
 object AutoEntrySettings {
-    private const val PREFS = "kosh_auto_entry"
+    private const val PREFS = "auto_entry"
     private const val KEY_PAUSED = "paused"
     private const val KEY_SMS = "sms_enabled"
     private const val KEY_PACKAGES = "enabled_packages"

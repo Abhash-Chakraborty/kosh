@@ -19,7 +19,7 @@ import io.flutter.plugin.common.MethodChannel
 import java.util.concurrent.Executors
 
 /**
- * The `kosh/auto_entry` channel. Attached to the UI engine by MainActivity
+ * The `sure/auto_entry` channel. Attached to the UI engine by MainActivity
  * (with a [Host] for permission prompts) and to the headless engine by
  * [AutoEntryWorker] (no host; reports the end of a run via [onBackgroundDone]).
  */
@@ -257,8 +257,8 @@ class AutoEntryChannel(
     }
 
     companion object {
-        const val NAME = "kosh/auto_entry"
-        private const val TAG = "KoshAutoEntry"
+        const val NAME = "sure/auto_entry"
+        private const val TAG = "SureAutoEntry"
         private val IO = Executors.newSingleThreadExecutor()
     }
 }

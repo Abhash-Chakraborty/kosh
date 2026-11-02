@@ -64,6 +64,6 @@ class SmsReceiver : BroadcastReceiver() {
     }
 
     companion object {
-        private const val TAG = "KoshAutoEntry"
+        private const val TAG = "SureAutoEntry"
     }
 }

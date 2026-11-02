@@ -35,13 +35,13 @@ if (flutterVersionName == null || flutterVersionCode == null) {
 if (flutterVersionCode == null) flutterVersionCode = '1'
 if (flutterVersionName == null) flutterVersionName = '1.0'
 
-// Kosh sideload build: adds the SMS permissions, the SMS receiver and the
+// Sideload build: adds the SMS permissions, the SMS receiver and the
 // notification listener (src/sideload/AndroidManifest.xml) and installs next
 // to the Play app under its own id. Off by default, so `flutter build apk` and
 // the Play pipeline produce the upstream app unchanged.
-//   KOSH_SIDELOAD=1 flutter build apk --release
-def koshSideload = System.getenv('KOSH_SIDELOAD') == '1' ||
-        project.findProperty('kosh.sideload') == 'true'
+//   SURE_SIDELOAD=1 flutter build apk --release
+def sideloadBuild = System.getenv('SURE_SIDELOAD') == '1' ||
+        project.findProperty('sure.sideload') == 'true'
 
 def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file('key.properties')
@@ -85,14 +85,14 @@ android {
     }
 
     defaultConfig {
-        applicationId koshSideload ? "am.sure.mobile.kosh" : "am.sure.mobile"
+        applicationId sideloadBuild ? "am.sure.mobile.sideload" : "am.sure.mobile"
         minSdkVersion 24
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
 
-    if (koshSideload) {
+    if (sideloadBuild) {
         sourceSets.matching { it.name in ['debug', 'profile', 'release'] }.configureEach {
             manifest.srcFile 'src/sideload/AndroidManifest.xml'
         }
@@ -102,7 +102,7 @@ android {
         release {
             if (hasKeystore) {
                 signingConfig signingConfigs.release
-            } else if (koshSideload) {
+            } else if (sideloadBuild) {
                 // Installable without a release key; updates need the same key.
                 signingConfig signingConfigs.debug
             }

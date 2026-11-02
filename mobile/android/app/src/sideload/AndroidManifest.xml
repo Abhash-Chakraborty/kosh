@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Kosh sideload overlay. Merged into the debug, profile and release manifests
-  only when the build runs with KOSH_SIDELOAD=1 (see app/build.gradle), so the
+  Sideload overlay. Merged into the debug, profile and release manifests
+  only when the build runs with SURE_SIDELOAD=1 (see app/build.gradle), so the
   Play build keeps the upstream manifest: Google Play only allows READ_SMS for
   default SMS apps.
 -->
@@ -14,7 +14,7 @@
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
 
     <application
-        android:label="Kosh"
+        android:label="Sure"
         tools:replace="android:label">
 
         <receiver
@@ -29,7 +29,7 @@
         <service
             android:name="am.sure.mobile.autoentry.PaymentNotificationListener"
             android:exported="true"
-            android:label="Kosh auto-entry"
+            android:label="Sure auto-entry"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />

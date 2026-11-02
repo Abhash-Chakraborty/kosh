@@ -12,10 +12,10 @@ import am.sure.mobile.R
 
 /** Local notification for a question from the server. No push service. */
 object QuestionNotifier {
-    const val EXTRA_ACTION = "kosh_auto_entry_action"
+    const val EXTRA_ACTION = "auto_entry_action"
     const val ACTION_QUESTIONS = "questions"
-    private const val CHANNEL_ID = "kosh_auto_entry_questions"
-    private const val TAG = "kosh_question"
+    private const val CHANNEL_ID = "auto_entry_questions"
+    private const val TAG = "auto_entry_question"
 
     fun show(context: Context, id: String, title: String, text: String) {
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

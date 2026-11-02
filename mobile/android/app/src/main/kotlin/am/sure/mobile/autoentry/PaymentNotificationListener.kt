@@ -66,7 +66,7 @@ class PaymentNotificationListener : NotificationListenerService() {
     }
 
     companion object {
-        private const val TAG = "KoshAutoEntry"
+        private const val TAG = "SureAutoEntry"
         private const val DUPLICATE_WINDOW_MS = 60_000L
     }
 }

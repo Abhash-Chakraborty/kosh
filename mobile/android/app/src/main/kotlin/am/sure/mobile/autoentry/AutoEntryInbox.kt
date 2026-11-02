@@ -11,7 +11,7 @@ import android.database.sqlite.SQLiteOpenHelper
  * the app's private storage and is emptied on every drain.
  */
 class AutoEntryInbox private constructor(context: Context) :
-    SQLiteOpenHelper(context.applicationContext, "kosh_auto_entry_inbox.db", null, 1) {
+    SQLiteOpenHelper(context.applicationContext, "auto_entry_inbox.db", null, 1) {
 
     companion object {
         const val SOURCE_SMS = "sms"

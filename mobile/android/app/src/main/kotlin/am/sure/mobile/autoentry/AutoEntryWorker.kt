@@ -70,10 +70,10 @@ class AutoEntryWorker(context: Context, params: WorkerParameters) : Worker(conte
     }
 
     companion object {
-        private const val TAG = "KoshAutoEntry"
+        private const val TAG = "SureAutoEntry"
         private const val ENTRYPOINT = "autoEntryBackgroundMain"
-        private const val UNIQUE_FLUSH = "kosh_auto_entry_flush"
-        private const val UNIQUE_PERIODIC = "kosh_auto_entry_periodic"
+        private const val UNIQUE_FLUSH = "auto_entry_flush"
+        private const val UNIQUE_PERIODIC = "auto_entry_periodic"
         private const val TIMEOUT_MINUTES = 4L
         private const val MAX_ATTEMPTS = 25
 

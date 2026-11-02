@@ -1,8 +1,8 @@
-name: Kosh sideload APK
+name: Sideload APK
 
-# Builds the sideload APK (SMS + notification auto-entry) for Kosh. The Play
+# Builds the sideload APK (SMS + notification auto-entry) for this fork. The Play
 # build and its workflows are untouched: the extra permissions only exist when
-# KOSH_SIDELOAD=1 (see mobile/android/app/build.gradle).
+# SURE_SIDELOAD=1 (see mobile/android/app/build.gradle).
 
 on:
   workflow_dispatch:
@@ -11,10 +11,10 @@ on:
       - 'r2-*'
     paths:
       - 'mobile/**'
-      - '.github/workflows/kosh-apk.yml'
+      - '.github/workflows/sideload-apk.yml'
 
 concurrency:
-  group: kosh-apk-${{ github.ref }}
+  group: sideload-apk-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -86,7 +86,7 @@ jobs:
       - name: Build sideload APK
         working-directory: mobile
         env:
-          KOSH_SIDELOAD: '1'
+          SURE_SIDELOAD: '1'
         run: flutter build apk --release
 
       - name: Name the APK
@@ -94,14 +94,14 @@ jobs:
         run: |
           set -euo pipefail
           version="$(sed -n 's/^version: *//p' mobile/pubspec.yaml)"
-          name="kosh-sideload-${version%%+*}-${GITHUB_SHA::7}.apk"
+          name="sure-sideload-${version%%+*}-${GITHUB_SHA::7}.apk"
           cp mobile/build/app/outputs/flutter-apk/app-release.apk "$name"
           echo "name=$name" >> "$GITHUB_OUTPUT"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
-          name: kosh-sideload-apk
+          name: sure-sideload-apk
           path: ${{ steps.apk.outputs.name }}
           retention-days: 30
           if-no-files-found: error

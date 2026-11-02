@@ -12,7 +12,7 @@ class AutoEntryQueue {
 
   static final AutoEntryQueue instance = AutoEntryQueue._();
 
-  static const String _fileName = 'kosh_auto_entry.db';
+  static const String _fileName = 'auto_entry.db';
   static const String _messages = 'payment_messages';
   static const String _skips = 'skipped_otps';
 

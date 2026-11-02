@@ -132,7 +132,7 @@ class AutoEntryPlatform {
 
   static final AutoEntryPlatform instance = AutoEntryPlatform._();
 
-  static const MethodChannel _channel = MethodChannel('kosh/auto_entry');
+  static const MethodChannel _channel = MethodChannel('sure/auto_entry');
 
   /// Auto-entry exists only on Android; every call is a no-op elsewhere.
   static bool get isSupported => !kIsWeb && Platform.isAndroid;
