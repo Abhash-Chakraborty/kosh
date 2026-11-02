@@ -1190,5 +1190,170 @@
   "@cashFlowTransactionsEmpty": { "description": "Empty state of the category transactions screen." },
 
 "cashFlowTransactionsLoadFailed": "Couldn't load transactions",
-  "@cashFlowTransactionsLoadFailed": { "description": "Error state of the category transactions screen." }
+  "@cashFlowTransactionsLoadFailed": { "description": "Error state of the category transactions screen." },
+
+  "settingsSectionAutomation": "Automation",
+  "@settingsSectionAutomation": { "description": "Settings section header above the Auto-entry tile." },
+
+  "autoEntryTitle": "Auto-entry",
+  "@autoEntryTitle": { "description": "Title of the Auto-entry screen and its settings tile." },
+
+  "autoEntrySettingsSubtitle": "Add payments from bank texts and payment apps",
+  "@autoEntrySettingsSubtitle": { "description": "Subtitle of the Auto-entry tile on the settings screen." },
+
+  "autoEntryStatusReading": "Reading",
+  "@autoEntryStatusReading": { "description": "Auto-entry status when it is reading texts and notifications." },
+
+  "autoEntryStatusReadingDetail": "New bank texts and payment notifications go to your server.",
+  "@autoEntryStatusReadingDetail": { "description": "Detail under the Reading status." },
+
+  "autoEntryStatusPaused": "Paused",
+  "@autoEntryStatusPaused": { "description": "Auto-entry status when the user paused it." },
+
+  "autoEntryStatusPausedDetail": "Nothing new is read until you resume.",
+  "@autoEntryStatusPausedDetail": { "description": "Detail under the Paused status." },
+
+  "autoEntryStatusIdle": "Not reading yet",
+  "@autoEntryStatusIdle": { "description": "Auto-entry status when no source is on or allowed." },
+
+  "autoEntryStatusIdleDetail": "Turn on a source below and allow access.",
+  "@autoEntryStatusIdleDetail": { "description": "Detail under the Not reading status." },
+
+  "autoEntryPause": "Pause",
+  "@autoEntryPause": { "description": "Button that pauses auto-entry." },
+
+  "autoEntryResume": "Resume",
+  "@autoEntryResume": { "description": "Button that resumes auto-entry." },
+
+  "autoEntryAllowSms": "Allow SMS access",
+  "@autoEntryAllowSms": { "description": "Prompt to grant the SMS permission." },
+
+  "autoEntryAllowSmsSubtitle": "Needed to read bank texts. If Android calls it a restricted setting, open App info, tap ⋮ and allow restricted settings first.",
+  "@autoEntryAllowSmsSubtitle": { "description": "Why the SMS permission is needed." },
+
+  "autoEntryNotificationAccess": "Turn on notification access",
+  "@autoEntryNotificationAccess": { "description": "Prompt to open the system notification access page." },
+
+  "autoEntryNotificationAccessSubtitle": "Needed to read payment app notifications. If Android calls it a restricted setting, open App info, tap ⋮ and allow restricted settings first.",
+  "@autoEntryNotificationAccessSubtitle": { "description": "Why notification access is needed." },
+
+  "autoEntryAllowNotifications": "Allow notifications",
+  "@autoEntryAllowNotifications": { "description": "Prompt to grant the post-notifications permission." },
+
+  "autoEntryAllowNotificationsSubtitle": "So the app can tell you when your server has a question.",
+  "@autoEntryAllowNotificationsSubtitle": { "description": "Why the notification permission is needed." },
+
+  "autoEntryUnauthorized": "The server refused auto-entry. Sign in again, or use an API key with read_write access.",
+  "@autoEntryUnauthorized": { "description": "Shown when the server answers 401/403." },
+
+  "autoEntryWaitingForWifi": "Waiting for Wi-Fi to send.",
+  "@autoEntryWaitingForWifi": { "description": "Shown when sending over mobile data is off and there is no Wi-Fi." },
+
+  "autoEntrySectionThisMonth": "This month",
+  "@autoEntrySectionThisMonth": { "description": "Section header for this month's auto-entry counts." },
+
+  "autoEntryCountSent": "Sent",
+  "@autoEntryCountSent": { "description": "Count label: messages sent this month." },
+
+  "autoEntryCountEntered": "Entered",
+  "@autoEntryCountEntered": { "description": "Count label: messages entered as transactions this month." },
+
+  "autoEntryCountQuestions": "Questions",
+  "@autoEntryCountQuestions": { "description": "Count label: messages the server asked about this month." },
+
+  "autoEntryCountWaiting": "Waiting",
+  "@autoEntryCountWaiting": { "description": "Count label: messages not sent yet." },
+
+  "autoEntryOtpsSkipped": "{count, plural, one{{count} OTP skipped. It never left the phone.} other{{count} OTPs skipped. They never left the phone.}}",
+  "@autoEntryOtpsSkipped": {
+    "description": "Line under the monthly counts about dropped one-time passwords.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "autoEntrySectionSources": "Sources",
+  "@autoEntrySectionSources": { "description": "Section header for the auto-entry sources." },
+
+  "autoEntrySourceSms": "Bank texts (SMS)",
+  "@autoEntrySourceSms": { "description": "Toggle for reading bank SMS." },
+
+  "autoEntrySourceSmsSubtitle": "Only transactional bank senders. OTPs never leave the phone.",
+  "@autoEntrySourceSmsSubtitle": { "description": "Subtitle of the bank texts toggle." },
+
+  "autoEntrySourceSmsUnavailable": "This build can't read SMS.",
+  "@autoEntrySourceSmsUnavailable": { "description": "Subtitle of the bank texts toggle in builds without SMS permission." },
+
+  "autoEntrySectionSending": "Sending",
+  "@autoEntrySectionSending": { "description": "Section header for auto-entry sending options." },
+
+  "autoEntryMaskTitle": "Mask account numbers",
+  "@autoEntryMaskTitle": { "description": "Always-on masking row title." },
+
+  "autoEntryMaskSubtitle": "Always on. Account, card and phone numbers become XX1234 before anything is sent. 12-digit UPI references are kept.",
+  "@autoEntryMaskSubtitle": { "description": "Explains the always-on masking." },
+
+  "autoEntryMobileData": "Send over mobile data",
+  "@autoEntryMobileData": { "description": "Toggle for sending without Wi-Fi." },
+
+  "autoEntryMobileDataSubtitle": "When off, messages wait for Wi-Fi.",
+  "@autoEntryMobileDataSubtitle": { "description": "Subtitle of the mobile data toggle." },
+
+  "autoEntryImport": "Import older texts",
+  "@autoEntryImport": { "description": "Button that imports the last 90 days of bank texts." },
+
+  "autoEntryImportSubtitle": "Reads the last 90 days of bank texts once.",
+  "@autoEntryImportSubtitle": { "description": "Subtitle of the import button." },
+
+  "autoEntryImportedOn": "Last imported {date}",
+  "@autoEntryImportedOn": {
+    "description": "Subtitle of the import button after an import.",
+    "placeholders": { "date": { "type": "String" } }
+  },
+
+  "autoEntryImportDone": "{count, plural, =0{No new payment texts found} one{Queued {count} text} other{Queued {count} texts}}",
+  "@autoEntryImportDone": {
+    "description": "Snackbar after importing older texts.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "autoEntryImportNoPermission": "SMS access is needed to import texts.",
+  "@autoEntryImportNoPermission": { "description": "Snackbar when the import can't read SMS." },
+
+  "autoEntrySectionLatest": "Latest",
+  "@autoEntrySectionLatest": { "description": "Section header for recently sent messages." },
+
+  "autoEntryLatestEmpty": "Nothing sent yet.",
+  "@autoEntryLatestEmpty": { "description": "Empty state of the Latest list." },
+
+  "autoEntryOpenQuestions": "Answer questions",
+  "@autoEntryOpenQuestions": { "description": "Opens the server's Questions page." },
+
+  "autoEntryOpenQuestionsFailed": "Couldn't open the Questions page.",
+  "@autoEntryOpenQuestionsFailed": { "description": "Snackbar when the Questions page can't be opened." },
+
+  "autoEntryStatusWaiting": "Waiting",
+  "@autoEntryStatusWaiting": { "description": "Status of a message not sent yet." },
+
+  "autoEntryStatusRejected": "Not accepted",
+  "@autoEntryStatusRejected": { "description": "Status of a message the server refused." },
+
+  "autoEntryStatusEntered": "Entered",
+  "@autoEntryStatusEntered": { "description": "Status: the server entered a transaction." },
+
+  "autoEntryStatusMerged": "Merged",
+  "@autoEntryStatusMerged": { "description": "Status: merged with an existing transaction." },
+
+  "autoEntryStatusQuestion": "Question",
+  "@autoEntryStatusQuestion": { "description": "Status: the server has a question." },
+
+  "autoEntryStatusIgnored": "Ignored",
+  "@autoEntryStatusIgnored": { "description": "Status: not a payment." },
+
+  "autoEntryStatusFailed": "Failed",
+  "@autoEntryStatusFailed": { "description": "Status: the server couldn't process it." },
+
+  "autoEntryQuestionNotificationTitle": "Your server has a question",
+  "@autoEntryQuestionNotificationTitle": { "description": "Title of the local notification for a server question." },
+
+  "autoEntryStatusReadingOnServer": "Reading",
+  "@autoEntryStatusReadingOnServer": { "description": "Status: the server is still reading this text and will answer later." }
 }

@@ -1243,4 +1243,179 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cashFlowTransactionsLoadFailed => 'Couldn\'t load transactions';
+
+  @override
+  String get settingsSectionAutomation => 'Automation';
+
+  @override
+  String get autoEntryTitle => 'Auto-entry';
+
+  @override
+  String get autoEntrySettingsSubtitle => 'Add payments from bank texts and payment apps';
+
+  @override
+  String get autoEntryStatusReading => 'Reading';
+
+  @override
+  String get autoEntryStatusReadingDetail => 'New bank texts and payment notifications go to your server.';
+
+  @override
+  String get autoEntryStatusPaused => 'Paused';
+
+  @override
+  String get autoEntryStatusPausedDetail => 'Nothing new is read until you resume.';
+
+  @override
+  String get autoEntryStatusIdle => 'Not reading yet';
+
+  @override
+  String get autoEntryStatusIdleDetail => 'Turn on a source below and allow access.';
+
+  @override
+  String get autoEntryPause => 'Pause';
+
+  @override
+  String get autoEntryResume => 'Resume';
+
+  @override
+  String get autoEntryAllowSms => 'Allow SMS access';
+
+  @override
+  String get autoEntryAllowSmsSubtitle => 'Needed to read bank texts. If Android calls it a restricted setting, open App info, tap ⋮ and allow restricted settings first.';
+
+  @override
+  String get autoEntryNotificationAccess => 'Turn on notification access';
+
+  @override
+  String get autoEntryNotificationAccessSubtitle => 'Needed to read payment app notifications. If Android calls it a restricted setting, open App info, tap ⋮ and allow restricted settings first.';
+
+  @override
+  String get autoEntryAllowNotifications => 'Allow notifications';
+
+  @override
+  String get autoEntryAllowNotificationsSubtitle => 'So the app can tell you when your server has a question.';
+
+  @override
+  String get autoEntryUnauthorized => 'The server refused auto-entry. Sign in again, or use an API key with read_write access.';
+
+  @override
+  String get autoEntryWaitingForWifi => 'Waiting for Wi-Fi to send.';
+
+  @override
+  String get autoEntrySectionThisMonth => 'This month';
+
+  @override
+  String get autoEntryCountSent => 'Sent';
+
+  @override
+  String get autoEntryCountEntered => 'Entered';
+
+  @override
+  String get autoEntryCountQuestions => 'Questions';
+
+  @override
+  String get autoEntryCountWaiting => 'Waiting';
+
+  @override
+  String autoEntryOtpsSkipped(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count OTPs skipped. They never left the phone.',
+      one: '$count OTP skipped. It never left the phone.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get autoEntrySectionSources => 'Sources';
+
+  @override
+  String get autoEntrySourceSms => 'Bank texts (SMS)';
+
+  @override
+  String get autoEntrySourceSmsSubtitle => 'Only transactional bank senders. OTPs never leave the phone.';
+
+  @override
+  String get autoEntrySourceSmsUnavailable => 'This build can\'t read SMS.';
+
+  @override
+  String get autoEntrySectionSending => 'Sending';
+
+  @override
+  String get autoEntryMaskTitle => 'Mask account numbers';
+
+  @override
+  String get autoEntryMaskSubtitle => 'Always on. Account, card and phone numbers become XX1234 before anything is sent. 12-digit UPI references are kept.';
+
+  @override
+  String get autoEntryMobileData => 'Send over mobile data';
+
+  @override
+  String get autoEntryMobileDataSubtitle => 'When off, messages wait for Wi-Fi.';
+
+  @override
+  String get autoEntryImport => 'Import older texts';
+
+  @override
+  String get autoEntryImportSubtitle => 'Reads the last 90 days of bank texts once.';
+
+  @override
+  String autoEntryImportedOn(String date) {
+    return 'Last imported $date';
+  }
+
+  @override
+  String autoEntryImportDone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Queued $count texts',
+      zero: 'No new payment texts found',
+      one: 'Queued $count text',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get autoEntryImportNoPermission => 'SMS access is needed to import texts.';
+
+  @override
+  String get autoEntrySectionLatest => 'Latest';
+
+  @override
+  String get autoEntryLatestEmpty => 'Nothing sent yet.';
+
+  @override
+  String get autoEntryOpenQuestions => 'Answer questions';
+
+  @override
+  String get autoEntryOpenQuestionsFailed => 'Couldn\'t open the Questions page.';
+
+  @override
+  String get autoEntryStatusWaiting => 'Waiting';
+
+  @override
+  String get autoEntryStatusRejected => 'Not accepted';
+
+  @override
+  String get autoEntryStatusEntered => 'Entered';
+
+  @override
+  String get autoEntryStatusMerged => 'Merged';
+
+  @override
+  String get autoEntryStatusQuestion => 'Question';
+
+  @override
+  String get autoEntryStatusIgnored => 'Ignored';
+
+  @override
+  String get autoEntryStatusFailed => 'Failed';
+
+  @override
+  String get autoEntryQuestionNotificationTitle => 'Your server has a question';
+
+  @override
+  String get autoEntryStatusReadingOnServer => 'Reading';
 }
