@@ -1,0 +1,71 @@
+<% env_managed = Setting.mail_server_from_env? %>
+<div class="space-y-4">
+  <div>
+    <h2 class="font-medium mb-1"><%= t(".title") %></h2>
+    <p class="text-sm text-secondary"><%= env_managed ? t(".env_configured_message") : t(".description") %></p>
+  </div>
+
+  <% unless env_managed %>
+    <%= styled_form_with scope: :setting, url: settings_mail_server_path, method: :patch, class: "space-y-4" do |form| %>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="sm:col-span-2">
+          <%= form.text_field :smtp_address,
+                              label: t(".address_label"),
+                              placeholder: t(".address_placeholder"),
+                              value: Setting.smtp_address,
+                              autocomplete: "off",
+                              autocapitalize: "none",
+                              spellcheck: "false",
+                              inputmode: "url" %>
+        </div>
+        <%= form.number_field :smtp_port,
+                              label: t(".port_label"),
+                              placeholder: t(".port_placeholder"),
+                              value: Setting.smtp_port,
+                              min: 1,
+                              max: 65_535 %>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <%= form.text_field :smtp_username,
+                            label: t(".username_label"),
+                            value: Setting.smtp_username,
+                            autocomplete: "off",
+                            autocapitalize: "none",
+                            spellcheck: "false" %>
+        <%= form.password_field :smtp_password,
+                                label: t(".password_label"),
+                                placeholder: t(".password_placeholder"),
+                                value: (Setting.smtp_password.present? ? "********" : nil),
+                                autocomplete: "new-password" %>
+      </div>
+
+      <div class="flex items-center justify-between gap-4">
+        <div class="space-y-1">
+          <p class="text-sm"><%= t(".tls_label") %></p>
+          <p class="text-xs text-secondary"><%= t(".tls_description") %></p>
+        </div>
+        <%= form.toggle :smtp_tls_enabled, checked: Setting.smtp_tls_enabled %>
+      </div>
+
+      <%= form.email_field :email_sender,
+                           label: t(".sender_label"),
+                           placeholder: t(".sender_placeholder"),
+                           value: Setting.mail_sender_from_env? ? Setting.mail_sender : Setting.email_sender,
+                           disabled: Setting.mail_sender_from_env?,
+                           autocomplete: "off" %>
+      <% if Setting.mail_sender_from_env? %>
+        <p class="text-xs text-secondary"><%= t(".sender_env_message") %></p>
+      <% end %>
+
+      <%= form.submit t(".save") %>
+    <% end %>
+  <% end %>
+
+  <% if Setting.mail_server_configured? %>
+    <%= render DS::Button.new(text: t(".send_test"),
+                              variant: :outline,
+                              href: send_test_settings_mail_server_path,
+                              method: :post) %>
+  <% end %>
+</div>

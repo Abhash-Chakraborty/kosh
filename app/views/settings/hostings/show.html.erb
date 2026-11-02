@@ -78,6 +78,9 @@
   <%= settings_section title: t(".sync_settings") do %>
     <%= render "settings/hostings/sync_settings" %>
   <% end %>
+  <%= settings_section title: t(".email") do %>
+    <%= render "settings/hostings/mail_server_settings" %>
+  <% end %>
 <% end %>
 <% if Current.user.super_admin? %>
   <%= settings_section title: t(".invites") do %>

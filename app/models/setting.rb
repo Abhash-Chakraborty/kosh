@@ -101,6 +101,9 @@ class Setting < RailsSettings::Base
   field :realie_api_key, type: :string, default: ENV["REALIE_API_KEY"]
   field :chimnie_api_key, type: :string, default: ENV["CHIMNIE_API_KEY"]
 
+  # Mail server for password resets and invitations (Setting::MailServer)
+  include MailServer
+
   # Transparent encryption for API key fields.  The `field` macro defines the
   # raw getter/setter on the class.  By prepending this module we intercept
   # reads (decrypt) and writes (encrypt) while `super` delegates to the
@@ -123,6 +126,7 @@ class Setting < RailsSettings::Base
       anthropic_access_token
       jev_api_key
       external_assistant_token
+      smtp_password
     ].freeze
 
     ENCRYPTED_FIELDS.each do |field_name|
