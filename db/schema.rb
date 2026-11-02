@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_31_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_03_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -114,6 +114,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_31_120000) do
     t.string "institution_name"
     t.jsonb "locked_attributes", default: {}
     t.string "logo_selection", default: "automatic", null: false
+    t.string "message_hints", default: [], null: false, array: true
     t.string "name"
     t.text "notes"
     t.uuid "owner_id"
@@ -1918,6 +1919,43 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_31_120000) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "payment_messages", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "account_id"
+    t.string "account_hint"
+    t.decimal "amount", precision: 19, scale: 4
+    t.string "app"
+    t.datetime "answered_at"
+    t.text "body", null: false
+    t.string "client_id", null: false
+    t.string "counterparty"
+    t.datetime "created_at", null: false
+    t.string "currency"
+    t.string "direction"
+    t.uuid "entry_id"
+    t.uuid "family_id", null: false
+    t.string "kind"
+    t.uuid "merged_into_id"
+    t.date "occurred_on"
+    t.string "parser"
+    t.string "question"
+    t.string "reason"
+    t.datetime "received_at", null: false
+    t.string "sender", null: false
+    t.string "source", null: false
+    t.string "status", default: "pending", null: false
+    t.string "upi_ref"
+    t.datetime "updated_at", null: false
+    t.uuid "user_id"
+    t.index ["account_id"], name: "index_payment_messages_on_account_id"
+    t.index ["entry_id"], name: "index_payment_messages_on_entry_id"
+    t.index ["family_id", "client_id"], name: "index_payment_messages_on_family_id_and_client_id", unique: true
+    t.index ["family_id", "status", "received_at"], name: "index_payment_messages_on_family_id_and_status_and_received_at"
+    t.index ["family_id", "upi_ref"], name: "index_payment_messages_on_family_id_and_upi_ref", where: "(upi_ref IS NOT NULL)"
+    t.index ["family_id"], name: "index_payment_messages_on_family_id"
+    t.index ["merged_into_id"], name: "index_payment_messages_on_merged_into_id"
+    t.index ["user_id"], name: "index_payment_messages_on_user_id"
+  end
+
   create_table "plaid_accounts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.decimal "available_balance", precision: 19, scale: 4
     t.datetime "created_at", null: false
@@ -3136,6 +3174,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_31_120000) do
   add_foreign_key "oidc_identities", "users"
   add_foreign_key "onchain_wallet_accounts", "onchain_wallet_items"
   add_foreign_key "onchain_wallet_items", "families"
+  add_foreign_key "payment_messages", "accounts", on_delete: :nullify
+  add_foreign_key "payment_messages", "entries", on_delete: :nullify
+  add_foreign_key "payment_messages", "families"
+  add_foreign_key "payment_messages", "payment_messages", column: "merged_into_id", on_delete: :nullify
+  add_foreign_key "payment_messages", "users", on_delete: :nullify
   add_foreign_key "plaid_accounts", "plaid_items"
   add_foreign_key "plaid_items", "families"
   add_foreign_key "plaid_items", "users", column: "owner_id", on_delete: :nullify

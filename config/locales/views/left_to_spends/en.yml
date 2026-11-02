@@ -1,0 +1,9 @@
+---
+en:
+  left_to_spends:
+    show:
+      left: left to spend this month
+      no_budget: Set a budget to see what's left this month
+      questions:
+        one: 1 payment to check
+        other: "%{count} payments to check"

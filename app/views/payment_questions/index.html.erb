@@ -1,0 +1,89 @@
+<% content_for :page_header do %>
+  <div class="space-y-1 mb-6">
+    <h1 class="text-xl lg:text-3xl font-medium text-primary"><%= t(".title") %></h1>
+    <p class="text-sm lg:text-base text-secondary"><%= t(".subtitle") %></p>
+  </div>
+<% end %>
+
+<div class="space-y-8 pb-12 max-w-3xl">
+  <section class="space-y-3" aria-labelledby="questions-heading">
+    <h2 id="questions-heading" class="text-sm font-medium text-secondary"><%= t(".questions", count: @questions.size) %></h2>
+
+    <% if @questions.empty? %>
+      <%= render DS::Card.new do %>
+        <p class="text-sm text-secondary"><%= t(".empty") %></p>
+      <% end %>
+    <% end %>
+
+    <% @questions.each do |message| %>
+      <%= render DS::Card.new(class: "gap-4", id: dom_id(message)) do %>
+        <div class="space-y-2">
+          <p class="text-base font-medium text-primary"><%= message.question_text %></p>
+          <p class="text-xs text-secondary">
+            <%= t(".from", source: message.source_name, time: l(message.received_at, format: :short)) %>
+          </p>
+          <p class="text-xs font-mono text-secondary bg-surface rounded-lg p-3 break-words"><%= message.body %></p>
+        </div>
+
+        <%= styled_form_with scope: :answer, url: payment_question_path(message), method: :patch, class: "space-y-3" do |f| %>
+          <% case message.question %>
+          <% when "account" %>
+            <%= f.select :account_id,
+                  PaymentMessage::AccountMatcher.new(message).choices.map { |a| [ a.name, a.id ] },
+                  { label: t(".account_label"), include_blank: t(".choose") }, { required: true } %>
+            <%= f.toggle :remember, checked: true, label: t(".remember_account", hint: [ message.account_hint && "••#{message.account_hint}", message.source_name ].compact.join(" · ")) %>
+          <% when "category" %>
+            <%= f.select :category_id,
+                  @categories.map { |c| [ c.name, c.id ] },
+                  { label: t(".category_label"), include_blank: t(".choose") }, { required: true } %>
+            <% if message.counterparty.present? %>
+              <%= f.toggle :remember, checked: true, label: t(".remember_payee", payee: message.counterparty) %>
+            <% end %>
+          <% when "unreadable" %>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <%= f.text_field :amount, label: t(".amount_label"), inputmode: "decimal", required: true %>
+              <%= f.select :direction, [ [ t(".paid"), "debit" ], [ t(".received"), "credit" ] ], { label: t(".direction_label") } %>
+            </div>
+            <%= f.text_field :counterparty, label: t(".payee_label") %>
+          <% end %>
+
+          <div class="flex flex-wrap gap-2">
+            <%= render DS::Button.new(text: t(".save"), type: "submit") %>
+            <%= render DS::Button.new(
+                  text: message.question == "category" ? t(".leave_uncategorized") : t(".not_a_payment"),
+                  variant: "ghost",
+                  type: "submit",
+                  name: "answer[dismiss]",
+                  value: "1",
+                  formnovalidate: true
+                ) %>
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
+  </section>
+
+  <section class="space-y-3" aria-labelledby="latest-heading">
+    <h2 id="latest-heading" class="text-sm font-medium text-secondary"><%= t(".latest") %></h2>
+    <%= render DS::Card.new(class: "p-0 divide-y divide-primary") do %>
+      <% if @latest.empty? %>
+        <p class="text-sm text-secondary p-5"><%= t(".no_messages") %></p>
+      <% end %>
+      <% @latest.each do |message| %>
+        <div class="flex items-start gap-3 px-5 py-3">
+          <div class="min-w-0 flex-1">
+            <p class="text-sm text-primary">
+              <span class="font-medium"><%= message.source_name %></span>
+              <span class="text-secondary"><%= t(".sources.#{message.source}") %></span>
+            </p>
+            <p class="text-xs font-mono text-secondary break-words"><%= message.body.truncate(160) %></p>
+          </div>
+          <p class="text-xs text-secondary text-right shrink-0 max-w-[45%]">
+            <%= t(".statuses.#{message.status}") %><br>
+            <span class="privacy-sensitive"><%= message.summary %></span>
+          </p>
+        </div>
+      <% end %>
+    <% end %>
+  </section>
+</div>

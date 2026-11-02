@@ -1,0 +1,31 @@
+---
+en:
+  payment_messages:
+    someone: someone
+    summary:
+      to: "%{amount} to %{who}"
+      from: "%{amount} from %{who}"
+      unread: Not read yet
+      ignored:
+        otp: Skipped (OTP)
+        promotion: Skipped (promotion)
+        reminder: Skipped (reminder, no money moved)
+        declined: Skipped (declined)
+        balance: Skipped (balance only)
+        not_money: Skipped (not a payment)
+        dismissed: Not a payment
+        other: Skipped
+    questions:
+      account: "Which account paid %{amount} to %{who}? It came from %{source}."
+      account_credit: "Which account received %{amount} from %{who}? It came from %{source}."
+      category: "What was %{amount} to %{who} for?"
+      category_credit: "What was %{amount} from %{who} for?"
+      unreadable: "Couldn't read this text from %{source}. What does it say?"
+  activemodel:
+    errors:
+      models:
+        payment_message/answer:
+          attributes:
+            base:
+              answered: This question was already answered.
+              invalid: That choice isn't available any more.
