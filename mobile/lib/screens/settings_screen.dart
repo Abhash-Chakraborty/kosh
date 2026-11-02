@@ -9,11 +9,13 @@ import '../providers/merchants_provider.dart';
 import '../providers/tags_provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/privacy_provider.dart';
+import '../services/auto_entry_platform.dart';
 import '../services/offline_storage_service.dart';
 import '../services/log_service.dart';
 import '../services/biometric_service.dart';
 import '../services/preferences_service.dart';
 import '../services/user_service.dart';
+import 'auto_entry_screen.dart';
 import 'log_viewer_screen.dart';
 import '../models/custom_proxy_header.dart';
 import '../services/api_config.dart';
@@ -45,6 +47,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _isTogglingBiometric = false;
   List<CustomProxyHeader> _customHeaders = [];
   bool _isCheckingForUpdate = false;
+  bool _autoEntryAvailable = false;
   late final Upgrader _manualUpgrader;
 
   String _displayInitial(String? displayName) {
@@ -59,6 +62,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _loadAppVersion();
     _loadBiometricState();
     _loadCustomHeaders();
+    _loadAutoEntryAvailability();
     _manualUpgrader = Upgrader(
       durationUntilAlertAgain: Duration.zero,
       countryCode: 'us',
@@ -195,6 +199,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() {
         _groupByType = groupByType;
       });
+    }
+  }
+
+  /// Auto-entry shows only on Android builds that declare the SMS receiver or
+  /// notification listener (the sideload APK).
+  Future<void> _loadAutoEntryAvailability() async {
+    if (!AutoEntryPlatform.isSupported) return;
+    try {
+      final state = await AutoEntryPlatform.instance.state();
+      if (mounted) setState(() => _autoEntryAvailable = state.available);
+    } catch (e) {
+      LogService.instance.warning(
+        'SettingsScreen',
+        'Auto-entry availability check failed with ${e.runtimeType}',
+      );
     }
   }
 
@@ -739,6 +758,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
 
           const Divider(),
+
+          if (_autoEntryAvailable) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Text(
+                l.settingsSectionAutomation,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.auto_awesome_outlined),
+              title: Text(l.autoEntryTitle),
+              subtitle: Text(l.autoEntrySettingsSubtitle),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AutoEntryScreen(),
+                  ),
+                );
+              },
+            ),
+            const Divider(),
+          ],
 
           // Data Management Section
           Padding(

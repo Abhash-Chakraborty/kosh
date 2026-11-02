@@ -17,6 +17,8 @@ import 'screens/biometric_lock_screen.dart';
 import 'screens/main_navigation_screen.dart';
 import 'screens/sso_onboarding_screen.dart';
 import 'services/api_config.dart';
+import 'services/auto_entry_platform.dart';
+import 'services/auto_entry_service.dart';
 import 'services/connectivity_service.dart';
 import 'services/log_service.dart';
 import 'services/preferences_service.dart';
@@ -49,6 +51,11 @@ void main() async {
     appRunner: () => runApp(SureApp(moneyHidden: moneyHidden)),
   );
 }
+
+/// Started by the Android auto-entry worker in a headless engine (no UI) to
+/// deliver bank texts and payment notifications captured in the background.
+@pragma('vm:entry-point')
+Future<void> autoEntryBackgroundMain() => runAutoEntryInBackground();
 
 class SureApp extends StatelessWidget {
   // Fail-closed default (masked) for the no-argument path; main() always passes
@@ -132,6 +139,7 @@ class _AppWrapperState extends State<AppWrapper> with WidgetsBindingObserver {
   bool _isCheckingConfig = true;
   bool _hasBackendUrl = false;
   bool _isLocked = false;
+  bool _autoEntryStartSynced = false;
   late final AppLinks _appLinks;
   StreamSubscription<Uri>? _linkSubscription;
 
@@ -147,6 +155,7 @@ class _AppWrapperState extends State<AppWrapper> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _checkBackendConfig();
     _initDeepLinks();
+    _initAutoEntry();
   }
 
   @override
@@ -160,8 +169,51 @@ class _AppWrapperState extends State<AppWrapper> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused) {
       _markLockedIfEnabled();
-    } else if (state == AppLifecycleState.resumed && _isLocked) {
+    } else if (state == AppLifecycleState.resumed) {
       // Lock screen is already showing via build(); biometric auto-triggers there.
+      _syncAutoEntry();
+    }
+  }
+
+  void _initAutoEntry() {
+    if (!AutoEntryPlatform.isSupported) return;
+    AutoEntryPlatform.instance.setLaunchActionHandler(_handleAutoEntryAction);
+    unawaited(_takeAutoEntryLaunchAction());
+  }
+
+  Future<void> _takeAutoEntryLaunchAction() async {
+    try {
+      final action = await AutoEntryPlatform.instance.takeLaunchAction();
+      if (action != null) _handleAutoEntryAction(action);
+    } catch (e) {
+      LogService.instance.warning(
+        'AutoEntry',
+        'Reading the launch action failed with ${e.runtimeType}',
+      );
+    }
+  }
+
+  /// A tapped question notification opens the server's Questions page.
+  void _handleAutoEntryAction(String action) {
+    if (action == 'questions') {
+      unawaited(AutoEntryService.openQuestions());
+    }
+  }
+
+  /// Sends whatever the receivers captured while the app was closed. Uses
+  /// the app's own token handling, which may refresh an expired token.
+  Future<void> _syncAutoEntry() async {
+    if (!AutoEntryPlatform.isSupported || !mounted) return;
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (authProvider.isInitializing || !authProvider.isAuthenticated) return;
+    try {
+      final token = await authProvider.getValidAccessToken();
+      await AutoEntryService.instance.syncNow(accessToken: token);
+    } catch (e) {
+      LogService.instance.warning(
+        'AutoEntry',
+        'Sync on resume failed with ${e.runtimeType}',
+      );
     }
   }
 
@@ -296,6 +348,11 @@ class _AppWrapperState extends State<AppWrapper> with WidgetsBindingObserver {
         }
 
         if (authProvider.isAuthenticated) {
+          if (!_autoEntryStartSynced) {
+            _autoEntryStartSynced = true;
+            WidgetsBinding.instance
+                .addPostFrameCallback((_) => _syncAutoEntry());
+          }
           return Stack(
             children: [
               UpgradeAlert(

@@ -2275,6 +2275,318 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t load transactions'**
   String get cashFlowTransactionsLoadFailed;
+
+  /// Settings section header above the Auto-entry tile.
+  ///
+  /// In en, this message translates to:
+  /// **'Automation'**
+  String get settingsSectionAutomation;
+
+  /// Title of the Auto-entry screen and its settings tile.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-entry'**
+  String get autoEntryTitle;
+
+  /// Subtitle of the Auto-entry tile on the settings screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Add payments from bank texts and payment apps'**
+  String get autoEntrySettingsSubtitle;
+
+  /// Auto-entry status when it is reading texts and notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading'**
+  String get autoEntryStatusReading;
+
+  /// Detail under the Reading status.
+  ///
+  /// In en, this message translates to:
+  /// **'New bank texts and payment notifications go to your server.'**
+  String get autoEntryStatusReadingDetail;
+
+  /// Auto-entry status when the user paused it.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get autoEntryStatusPaused;
+
+  /// Detail under the Paused status.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing new is read until you resume.'**
+  String get autoEntryStatusPausedDetail;
+
+  /// Auto-entry status when no source is on or allowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not reading yet'**
+  String get autoEntryStatusIdle;
+
+  /// Detail under the Not reading status.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on a source below and allow access.'**
+  String get autoEntryStatusIdleDetail;
+
+  /// Button that pauses auto-entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get autoEntryPause;
+
+  /// Button that resumes auto-entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get autoEntryResume;
+
+  /// Prompt to grant the SMS permission.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow SMS access'**
+  String get autoEntryAllowSms;
+
+  /// Why the SMS permission is needed.
+  ///
+  /// In en, this message translates to:
+  /// **'Needed to read bank texts. If Android calls it a restricted setting, open App info, tap ⋮ and allow restricted settings first.'**
+  String get autoEntryAllowSmsSubtitle;
+
+  /// Prompt to open the system notification access page.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on notification access'**
+  String get autoEntryNotificationAccess;
+
+  /// Why notification access is needed.
+  ///
+  /// In en, this message translates to:
+  /// **'Needed to read payment app notifications. If Android calls it a restricted setting, open App info, tap ⋮ and allow restricted settings first.'**
+  String get autoEntryNotificationAccessSubtitle;
+
+  /// Prompt to grant the post-notifications permission.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow notifications'**
+  String get autoEntryAllowNotifications;
+
+  /// Why the notification permission is needed.
+  ///
+  /// In en, this message translates to:
+  /// **'So the app can tell you when your server has a question.'**
+  String get autoEntryAllowNotificationsSubtitle;
+
+  /// Shown when the server answers 401/403.
+  ///
+  /// In en, this message translates to:
+  /// **'The server refused auto-entry. Sign in again, or use an API key with read_write access.'**
+  String get autoEntryUnauthorized;
+
+  /// Shown when sending over mobile data is off and there is no Wi-Fi.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for Wi-Fi to send.'**
+  String get autoEntryWaitingForWifi;
+
+  /// Section header for this month's auto-entry counts.
+  ///
+  /// In en, this message translates to:
+  /// **'This month'**
+  String get autoEntrySectionThisMonth;
+
+  /// Count label: messages sent this month.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent'**
+  String get autoEntryCountSent;
+
+  /// Count label: messages entered as transactions this month.
+  ///
+  /// In en, this message translates to:
+  /// **'Entered'**
+  String get autoEntryCountEntered;
+
+  /// Count label: messages the server asked about this month.
+  ///
+  /// In en, this message translates to:
+  /// **'Questions'**
+  String get autoEntryCountQuestions;
+
+  /// Count label: messages not sent yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting'**
+  String get autoEntryCountWaiting;
+
+  /// Line under the monthly counts about dropped one-time passwords.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} OTP skipped. It never left the phone.} other{{count} OTPs skipped. They never left the phone.}}'**
+  String autoEntryOtpsSkipped(int count);
+
+  /// Section header for the auto-entry sources.
+  ///
+  /// In en, this message translates to:
+  /// **'Sources'**
+  String get autoEntrySectionSources;
+
+  /// Toggle for reading bank SMS.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank texts (SMS)'**
+  String get autoEntrySourceSms;
+
+  /// Subtitle of the bank texts toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Only transactional bank senders. OTPs never leave the phone.'**
+  String get autoEntrySourceSmsSubtitle;
+
+  /// Subtitle of the bank texts toggle in builds without SMS permission.
+  ///
+  /// In en, this message translates to:
+  /// **'This build can\'t read SMS.'**
+  String get autoEntrySourceSmsUnavailable;
+
+  /// Section header for auto-entry sending options.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending'**
+  String get autoEntrySectionSending;
+
+  /// Always-on masking row title.
+  ///
+  /// In en, this message translates to:
+  /// **'Mask account numbers'**
+  String get autoEntryMaskTitle;
+
+  /// Explains the always-on masking.
+  ///
+  /// In en, this message translates to:
+  /// **'Always on. Account, card and phone numbers become XX1234 before anything is sent. 12-digit UPI references are kept.'**
+  String get autoEntryMaskSubtitle;
+
+  /// Toggle for sending without Wi-Fi.
+  ///
+  /// In en, this message translates to:
+  /// **'Send over mobile data'**
+  String get autoEntryMobileData;
+
+  /// Subtitle of the mobile data toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'When off, messages wait for Wi-Fi.'**
+  String get autoEntryMobileDataSubtitle;
+
+  /// Button that imports the last 90 days of bank texts.
+  ///
+  /// In en, this message translates to:
+  /// **'Import older texts'**
+  String get autoEntryImport;
+
+  /// Subtitle of the import button.
+  ///
+  /// In en, this message translates to:
+  /// **'Reads the last 90 days of bank texts once.'**
+  String get autoEntryImportSubtitle;
+
+  /// Subtitle of the import button after an import.
+  ///
+  /// In en, this message translates to:
+  /// **'Last imported {date}'**
+  String autoEntryImportedOn(String date);
+
+  /// Snackbar after importing older texts.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No new payment texts found} one{Queued {count} text} other{Queued {count} texts}}'**
+  String autoEntryImportDone(int count);
+
+  /// Snackbar when the import can't read SMS.
+  ///
+  /// In en, this message translates to:
+  /// **'SMS access is needed to import texts.'**
+  String get autoEntryImportNoPermission;
+
+  /// Section header for recently sent messages.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest'**
+  String get autoEntrySectionLatest;
+
+  /// Empty state of the Latest list.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing sent yet.'**
+  String get autoEntryLatestEmpty;
+
+  /// Opens the server's Questions page.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer questions'**
+  String get autoEntryOpenQuestions;
+
+  /// Snackbar when the Questions page can't be opened.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the Questions page.'**
+  String get autoEntryOpenQuestionsFailed;
+
+  /// Status of a message not sent yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting'**
+  String get autoEntryStatusWaiting;
+
+  /// Status of a message the server refused.
+  ///
+  /// In en, this message translates to:
+  /// **'Not accepted'**
+  String get autoEntryStatusRejected;
+
+  /// Status: the server entered a transaction.
+  ///
+  /// In en, this message translates to:
+  /// **'Entered'**
+  String get autoEntryStatusEntered;
+
+  /// Status: merged with an existing transaction.
+  ///
+  /// In en, this message translates to:
+  /// **'Merged'**
+  String get autoEntryStatusMerged;
+
+  /// Status: the server has a question.
+  ///
+  /// In en, this message translates to:
+  /// **'Question'**
+  String get autoEntryStatusQuestion;
+
+  /// Status: not a payment.
+  ///
+  /// In en, this message translates to:
+  /// **'Ignored'**
+  String get autoEntryStatusIgnored;
+
+  /// Status: the server couldn't process it.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get autoEntryStatusFailed;
+
+  /// Title of the local notification for a server question.
+  ///
+  /// In en, this message translates to:
+  /// **'Your server has a question'**
+  String get autoEntryQuestionNotificationTitle;
+
+  /// Status: the server is still reading this text and will answer later.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading'**
+  String get autoEntryStatusReadingOnServer;
 }
 
 class _AppLocalizationsDelegate
