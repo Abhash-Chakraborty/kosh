@@ -1,0 +1,71 @@
+# Keeps this fork's main up to date with we-promise/sure. Every morning it does
+# what GitHub's "Sync fork" button does: a fast-forward, or a merge commit when
+# main has commits of its own. Then it builds the server image.
+#
+# When the merge has conflicts, or upstream changed its workflow files (the
+# Actions token isn't allowed to push those), it opens an issue instead, and
+# the update is done by hand.
+name: Sync upstream
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 0 * * *' # 06:00 IST
+
+permissions:
+  contents: write
+  actions: write
+  issues: write
+
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.repository != 'we-promise/sure'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Merge we-promise/sure main
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -uo pipefail
+
+          if result=$(gh api -X POST "repos/$REPO/merge-upstream" -f branch=main 2>&1); then
+            echo "$result"
+            if [ "$(jq -r .merge_type <<<"$result")" != "none" ]; then
+              gh workflow run server-image.yml -R "$REPO" --ref main \
+                || echo "::notice::No server image workflow on main yet."
+            fi
+            exit 0
+          fi
+
+          echo "::warning::Sync failed: $result"
+          title="Upstream update needs a manual merge"
+          open=$(gh issue list -R "$REPO" --state open --search "in:title \"$title\"" --json number --jq 'length')
+          if [ "$open" = "0" ]; then
+            gh issue create -R "$REPO" --title "$title" --body "$(cat <<EOF
+          The daily sync couldn't merge we-promise/sure into main:
+
+          \`\`\`
+          $result
+          \`\`\`
+
+          Either the merge has conflicts or upstream changed files under .github/workflows,
+          which the Actions token can't push. Merge it locally:
+
+          \`\`\`sh
+          git switch main && git pull
+          git fetch upstream && git merge upstream/main
+          git push
+          \`\`\`
+
+          Close this issue once main is up to date. The next run opens a new one if needed.
+          EOF
+          )"
+          fi
+          exit 1
