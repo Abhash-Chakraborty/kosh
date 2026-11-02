@@ -4,7 +4,8 @@
 # If you are deploying to a memory constrained environment
 # you may want to delete this file, but otherwise it's free
 # performance.
-if defined? RubyVM::YJIT.enable
+# RUBY_YJIT_ENABLE=0 keeps it off on servers short of memory.
+if defined?(RubyVM::YJIT.enable) && ENV["RUBY_YJIT_ENABLE"] != "0"
   Rails.application.config.after_initialize do
     RubyVM::YJIT.enable
   end

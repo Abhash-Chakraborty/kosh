@@ -57,3 +57,12 @@ if rails_env == "development"
   # isn't killed by Puma when suspended by a debugger.
   worker_timeout 3600
 end
+
+# SIDEKIQ_EMBEDDED=true runs the job worker inside this process, for small
+# servers (lib/embedded_sidekiq.rb). It needs a single Puma process: a
+# cluster would start a worker in every child.
+if %w[1 true yes].include?(ENV["SIDEKIQ_EMBEDDED"].to_s.downcase)
+  workers 0
+  after_booted { EmbeddedSidekiq.start }
+  after_stopped { EmbeddedSidekiq.stop }
+end
