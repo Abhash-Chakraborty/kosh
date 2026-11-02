@@ -1,0 +1,40 @@
+---
+en:
+  payment_questions:
+    index:
+      title: Payments to check
+      subtitle: Bank texts and app notifications that need a word from you.
+      questions:
+        zero: No questions
+        one: 1 question
+        other: "%{count} questions"
+      empty: Nothing to check. New payments from your phone go straight in.
+      from: "%{source}, %{time}"
+      account_label: Account
+      category_label: Category
+      choose: Choose…
+      remember_account: "Remember %{hint} for this account"
+      remember_payee: "Always file %{payee} here"
+      amount_label: Amount (₹)
+      direction_label: Money
+      paid: Paid
+      received: Received
+      payee_label: To or from
+      save: Save
+      not_a_payment: Not a payment
+      leave_uncategorized: Leave uncategorized
+      latest: Latest from your phone
+      no_messages: Nothing yet. Turn on auto-entry in the Android app.
+      sources:
+        sms: text
+        notification: notification
+      statuses:
+        pending: Reading
+        entered: Added
+        merged: Merged
+        question: Question
+        ignored: Skipped
+        failed: Failed
+    update:
+      saved: "Saved: %{summary}"
+      failed: That answer couldn't be saved.

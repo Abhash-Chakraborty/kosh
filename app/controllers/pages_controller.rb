@@ -54,6 +54,10 @@ class PagesController < ApplicationController
     @just_hidden_section = params[:hidden_section]
     @just_shown_section = params[:shown_section]
 
+    PaymentMessage.close_settled_questions!(Current.family)
+    @open_payment_questions = Current.family.payment_messages.open_questions.count
+    @month_budget = current_month_budget
+
     @breadcrumbs = [ [ t("breadcrumbs.home"), root_path ], [ t("breadcrumbs.dashboard"), nil ] ]
   end
 
@@ -152,6 +156,21 @@ class PagesController < ApplicationController
     # would pin today's list and leave out categories another month or
     # period adds. While the widget is hidden its ids are only checked
     # against the family's categories, so its queries still never run.
+    # This month's budget for "Left to spend", read without creating one: the
+    # user's own budget when they keep one, else the household's.
+    def current_month_budget
+      today = Date.current
+      budget = Current.family.budgets
+        .where(user_id: [ Current.user.id, nil ])
+        .where("start_date <= :today AND end_date >= :today", today: today)
+        .order(Arel.sql("user_id IS NULL"))
+        .first
+      return nil unless budget&.initialized?
+
+      budget.current_user = Current.user
+      budget
+    end
+
     def dashboard_view_params
       view_params = params.permit(*DASHBOARD_VIEW_PARAMS).to_h
       if view_params.key?(:spending_category_ids)
