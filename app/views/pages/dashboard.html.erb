@@ -4,9 +4,11 @@
       <h1 class="text-xl lg:text-3xl font-medium text-primary">
         <%= t("pages.dashboard.welcome", name: Current.user.first_name) %>
       </h1>
-      <p class="text-sm lg:text-base text-secondary">
+      <%# Left to spend and the payments waiting for an answer load in their own
+          request, so Home's own render stays as cheap as before. %>
+      <%= turbo_frame_tag "left_to_spend", src: left_to_spend_path, class: "block text-sm lg:text-base text-secondary" do %>
         <%= t("pages.dashboard.subtitle") %>
-      </p>
+      <% end %>
     </div>
 
     <div class="flex items-center gap-2">
@@ -109,10 +111,6 @@
         <% end %>
       <% end %>
     <% end %>
-  <% end %>
-
-  <% if accessible_accounts.any? && !@customizing_dashboard %>
-    <%= render "pages/dashboard/left_to_spend", budget: @month_budget, open_questions: @open_payment_questions %>
   <% end %>
 
   <% two_column = Current.user.dashboard_two_column? %>

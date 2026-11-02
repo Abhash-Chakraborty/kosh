@@ -1,0 +1,15 @@
+<%= turbo_frame_tag "left_to_spend", class: "block text-sm lg:text-base text-secondary" do %>
+  <% if @budget %>
+    <% left = @budget.available_to_spend_money %>
+    <%= link_to budgets_path, target: "_top", class: "hover:text-primary" do %>
+      <span class="privacy-sensitive font-medium <%= left.negative? ? "text-destructive" : "text-primary" %>"><%= left.format %></span>
+      <%= t(".left") %>
+    <% end %>
+  <% else %>
+    <%= link_to t(".no_budget"), budgets_path, target: "_top", class: "hover:text-primary" %>
+  <% end %>
+  <% if @open_questions.positive? %>
+    <span aria-hidden="true">·</span>
+    <%= link_to t(".questions", count: @open_questions), payment_questions_path, target: "_top", class: "text-primary underline" %>
+  <% end %>
+<% end %>

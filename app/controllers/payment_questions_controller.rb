@@ -30,7 +30,10 @@ class PaymentQuestionsController < ApplicationController
       @message = Current.family.payment_messages.find(params[:id])
     end
 
+    # Read field by field: the ids are looked up inside the family's own
+    # accounts and categories, never assigned to a record.
     def answer_params
-      params.fetch(:answer, {}).permit(:account_id, :category_id, :amount, :direction, :counterparty, :remember, :dismiss)
+      answer = params[:answer].is_a?(ActionController::Parameters) ? params[:answer] : {}
+      %i[account_id category_id amount direction counterparty remember dismiss].index_with { |key| answer[key].presence&.to_s }
     end
 end

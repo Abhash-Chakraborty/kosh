@@ -38,15 +38,6 @@ en:
       heading: Terms of Service
       placeholder: Terms of service content will be displayed here.
     dashboard:
-      left_to_spend:
-        title: Left to spend this month
-        detail: "%{spent} spent of %{budget}"
-        no_budget: Set a budget to see what's left
-        questions_title: Payments to check
-        answer:
-          one: Answer 1 question
-          other: Answer %{count} questions
-        no_questions: Nothing to check
       welcome: "Welcome back, %{name}"
       subtitle: "Here's what's happening with your finances"
       new: "New"

@@ -454,6 +454,7 @@ Rails.application.routes.draw do
   end
 
   resources :payment_questions, only: %i[index update]
+  resource :left_to_spend, only: :show
 
   resources :tags, except: :show do
     resources :deletions, only: %i[new create], module: :tag

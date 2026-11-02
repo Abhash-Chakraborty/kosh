@@ -39,11 +39,18 @@ class PaymentQuestionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "ignored", @message.reload.status
   end
 
-  test "home shows the questions waiting" do
+  test "home loads the left to spend line in its own frame" do
     get root_url
 
     assert_response :success
-    assert_select "a[href='#{payment_questions_path}']"
+    assert_select "turbo-frame#left_to_spend[src='#{left_to_spend_path}']"
+  end
+
+  test "the left to spend line links to the questions waiting" do
+    get left_to_spend_url
+
+    assert_response :success
+    assert_select "turbo-frame#left_to_spend a[href='#{payment_questions_path}']", text: "1 payment to check"
   end
 
   test "cannot answer another family's question" do
