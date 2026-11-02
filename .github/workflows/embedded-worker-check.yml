@@ -1,0 +1,101 @@
+# Boots the production image with the job worker inside Puma
+# (SIDEKIQ_EMBEDDED, lib/embedded_sidekiq.rb), checks the worker registers and
+# loads the scheduled jobs, and compares memory with the two-container setup.
+name: Embedded worker check
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'config/puma.rb'
+      - 'config/sidekiq.yml'
+      - 'config/initializers/sidekiq.rb'
+      - 'config/initializers/enable_yjit.rb'
+      - 'config/database.yml'
+      - 'lib/embedded_sidekiq.rb'
+      - 'Dockerfile'
+      - 'Gemfile.lock'
+      - '.github/workflows/embedded-worker-check.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: embedded-worker-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  boot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build the image
+        run: docker build -t sure:check .
+
+      - name: Start Postgres and Redis
+        run: |
+          docker network create sure
+          docker run -d --name db --network sure -e POSTGRES_USER=sure -e POSTGRES_PASSWORD=sure -e POSTGRES_DB=sure_production postgres:16
+          docker run -d --name redis --network sure redis:7
+          for i in $(seq 1 30); do docker exec db pg_isready -U sure -d sure_production && break; sleep 2; done
+
+      - name: Boot with the worker embedded
+        run: |
+          cat > app.env <<ENV
+          RAILS_ENV=production
+          SECRET_KEY_BASE=$(openssl rand -hex 64)
+          SELF_HOSTED=true
+          RAILS_FORCE_SSL=false
+          RAILS_ASSUME_SSL=false
+          DB_HOST=db
+          POSTGRES_USER=sure
+          POSTGRES_PASSWORD=sure
+          POSTGRES_DB=sure_production
+          REDIS_URL=redis://redis:6379/1
+          RAILS_MAX_THREADS=3
+          ENV
+          docker run -d --name web --network sure --env-file app.env \
+            -e SIDEKIQ_EMBEDDED=true -e DB_POOL=6 -e RUBY_YJIT_ENABLE=0 -p 3000:3000 sure:check
+          for i in $(seq 1 90); do
+            curl -fs http://localhost:3000/up >/dev/null && break
+            sleep 2
+          done
+          curl -fs http://localhost:3000/up
+          docker logs web 2>&1 | tail -20
+
+      - name: The worker runs inside Puma
+        run: |
+          sleep 15
+          docker exec web bin/rails runner '
+            processes = Sidekiq::ProcessSet.new.to_a
+            abort "no Sidekiq process registered" if processes.empty?
+            processes.each { |p| puts "#{p["hostname"]} pid #{p["pid"]} concurrency #{p["concurrency"]} queues #{p["queues"].uniq.join(",")}" }
+            jobs = Sidekiq::Cron::Job.all.map(&:name)
+            abort "no scheduled jobs loaded" if jobs.empty?
+            puts "scheduled jobs: #{jobs.join(", ")}"
+          '
+          # One Puma process, no cluster parent.
+          docker exec web ps -eo pid,rss,args | grep -E "puma|sidekiq" | grep -v grep
+          test "$(docker exec web ps -eo args | grep -c 'cluster worker')" = 0
+
+      - name: Memory, embedded
+        run: |
+          for page in / /sessions/new /registration/new; do curl -s -o /dev/null "http://localhost:3000$page"; done
+          sleep 5
+          docker stats --no-stream --format '{{.Name}} {{.MemUsage}}' web | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Memory, web and worker in separate containers
+        run: |
+          docker rm -f web
+          docker run -d --name web2 --network sure --env-file app.env -e WEB_CONCURRENCY=1 -p 3001:3000 sure:check
+          for i in $(seq 1 90); do curl -fs http://localhost:3001/up >/dev/null && break; sleep 2; done
+          docker run -d --name worker2 --network sure --env-file app.env sure:check bundle exec sidekiq
+          sleep 30
+          for page in / /sessions/new /registration/new; do curl -s -o /dev/null "http://localhost:3001$page"; done
+          sleep 5
+          docker stats --no-stream --format '{{.Name}} {{.MemUsage}}' web2 worker2 | tee -a "$GITHUB_STEP_SUMMARY"
