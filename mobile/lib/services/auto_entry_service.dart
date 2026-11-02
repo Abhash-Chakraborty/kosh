@@ -63,7 +63,7 @@ class AutoEntryService {
   bool _syncing = false;
 
   /// Filters, masks and queues captured messages. Returns how many were
-  /// queued. OTPs are only logged as "skipped OTP from <sender>".
+  /// queued. OTPs are only logged as "skipped OTP from" plus the sender.
   Future<int> ingest(InboxDrain drain) async {
     for (final skip in drain.skippedOtps) {
       await _recordOtp(skip.sender, skip.at);
