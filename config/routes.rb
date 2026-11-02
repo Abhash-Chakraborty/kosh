@@ -806,6 +806,7 @@ Rails.application.routes.draw do
       resources :securities, only: [ :index, :show ]
       resources :security_prices, only: [ :index, :show ]
       resources :tags, only: [ :index, :show, :create, :update, :destroy ]
+      resources :payment_messages, only: [ :index, :create ]
 
       resources :transactions, only: [ :index, :show, :create, :update, :destroy ] do
         resource :split, only: [ :show, :create, :update, :destroy ]
