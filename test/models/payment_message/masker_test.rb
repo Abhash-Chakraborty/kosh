@@ -3,7 +3,7 @@ require "test_helper"
 class PaymentMessage::MaskerTest < ActiveSupport::TestCase
   test "cuts account, card and phone numbers to the last four" do
     assert_equal "a/c XX6789 card XX4321 call XX3210",
-      PaymentMessage::Masker.mask("a/c 50100123456789 card 4111111111114321 call 9876543210")
+      PaymentMessage::Masker.mask("a/c 50100123456789 card 0000000000004321 call 9876543210")
   end
 
   test "keeps 12-digit UPI references whole" do
