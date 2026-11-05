@@ -24,18 +24,6 @@ nl:
       minimum_payment_placeholder: "100"
       statement_close_day: "Afschrift sluit op"
       statement_cycle_description: "De dag van de maand waarop uw afschrift sluit en de dag waarop de betaling vervalt. Als deze zijn ingesteld, toont het tabblad Overzicht het bedrag van uw laatste afschrift en wat er voor het volgende wordt opgebouwd. Een gekoppelde kaart vult deze automatisch in en behoudt wat u handmatig heeft ingesteld."
-      sophtron_balance_sign_auto: "Automatisch"
-      sophtron_balance_sign_credit: "Tegoed (de bank is u geld verschuldigd)"
-      sophtron_balance_sign_debt: "Schuld (u bent de bank geld verschuldigd)"
-      sophtron_balance_sign_description: "Gebruik alleen een handmatige instelling als Sophtron een dubbelzinnig teken rapporteert. Automatisch blijft creditcardsaldi omkeren."
-      sophtron_balance_sign_label: "Betekenis van Sophtron-saldo"
-      simplefin_balance_sign_auto: "Automatisch"
-      simplefin_balance_sign_credit: "Tegoed (de bank is u geld verschuldigd)"
-      simplefin_balance_sign_debt: "Schuld (u bent de bank geld verschuldigd)"
-      simplefin_balance_sign_description: "Gebruik alleen een handmatige instelling als SimpleFIN een dubbelzinnig teken rapporteert. Automatisch blijft de transactiegeschiedenis en het saldo van de provider gebruiken."
-      simplefin_balance_sign_label: "Betekenis van SimpleFIN-saldo"
-      treat_balance_as_available_credit_description: "Schakel in als uw bank het saldo van deze kaart rapporteert als resterend beschikbaar krediet in plaats van het verschuldigde bedrag. De schuld wordt dan afgeleid van de kredietlimiet die uw bank rapporteert, of van het veld Beschikbaar krediet als uw bank die niet levert."
-      treat_balance_as_available_credit_label: "Saldo is beschikbaar krediet"
     tabs:
       overview:
         above_minimum: "Dit afschrift bedroeg %{balance}, boven het minimum van %{minimum}. Als u alleen het minimum betaalt, blijft het saldo op de kaart staan tegen dit rentepercentage."
@@ -63,5 +51,3 @@ nl:
         unknown: "Onbekend"
     new:
       title: "Creditcardgegevens invoeren"
-    update:
-      sophtron_balance_sign_error: "De betekenis van het Sophtron-saldo kon niet worden toegepast. Uw vorige instelling is behouden. Probeer het opnieuw."

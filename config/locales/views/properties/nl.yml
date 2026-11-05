@@ -22,10 +22,6 @@ nl:
       subtype_prompt: "Selecteer vastgoedtype"
       year_built: "Bouwjaar"
       year_built_placeholder: "2000"
-    avm_providers:
-      rentcast: "RentCast"
-      realie: "Realie"
-      chimnie: "Chimnie"
     new:
       title: "Vastgoedgegevens invoeren"
       next: "Volgende"
@@ -52,7 +48,6 @@ nl:
         high: "Hoog"
         medium: "Gemiddeld"
         low: "Laag"
-      avm_attribution_chimnie: "Waarderingsgegevens van Chimnie. Bevat OS-gegevens © Crown copyright and database right, Royal Mail-gegevens © Royal Mail copyright and database right en HM Land Registry-gegevens © Crown copyright and database right, gelicentieerd onder de Open Government Licence v3.0."
       avm_preview_confirm: "Vastgoed toevoegen"
     address:
       title: "Vastgoed handmatig invoeren"

@@ -28,24 +28,6 @@ id:
         total tagihan terakhir dan jumlah yang terakumulasi menuju tagihan berikutnya.
         Kartu yang terhubung mengisi data ini secara otomatis dan tetap mempertahankan
         apa yang Anda atur manual.
-      sophtron_balance_sign_auto: Otomatis
-      sophtron_balance_sign_credit: Kredit (bank berutang kepada Anda)
-      sophtron_balance_sign_debt: Utang (Anda berutang kepada bank)
-      sophtron_balance_sign_description: Gunakan penimpaan hanya jika Sophtron melaporkan
-        tanda yang ambigu. Mode otomatis akan terus menegasikan saldo kartu kredit.
-      sophtron_balance_sign_label: Arti saldo Sophtron
-      simplefin_balance_sign_auto: Otomatis
-      simplefin_balance_sign_credit: Kredit (bank berutang kepada Anda)
-      simplefin_balance_sign_debt: Utang (Anda berutang kepada bank)
-      simplefin_balance_sign_description: Gunakan penimpaan hanya jika SimpleFIN melaporkan
-        tanda yang ambigu. Mode otomatis akan terus menggunakan riwayat transaksi dan
-        saldo penyedia.
-      simplefin_balance_sign_label: Arti saldo SimpleFIN
-      treat_balance_as_available_credit_description: Aktifkan jika bank Anda melaporkan
-        saldo kartu ini sebagai sisa kredit yang tersedia alih-alih jumlah utang. Utang
-        kemudian dihitung dari batas kredit yang dilaporkan bank Anda, atau dari kolom
-        Kredit tersedia jika bank Anda tidak menyediakannya.
-      treat_balance_as_available_credit_label: Saldo adalah kredit yang tersedia
     tabs:
       overview:
         above_minimum: "Tagihan ini berjumlah %{balance}, di atas minimum %{minimum}.
@@ -79,6 +61,3 @@ id:
         unknown: Tidak diketahui
     new:
       title: Masukkan detail kartu kredit
-    update:
-      sophtron_balance_sign_error: Tidak dapat menerapkan arti saldo Sophtron.
-        Setelan sebelumnya tetap dipertahankan. Silakan coba lagi.

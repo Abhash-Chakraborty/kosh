@@ -9,10 +9,8 @@ nl:
     account:
       complete_setup: "Instellen voltooien"
       edit: "Bewerken"
-      link_lunchflow: "Koppel met Lunch Flow"
       link_provider: "Koppelen met provider"
       unlink_provider: "Koppeling met provider verbreken"
-      change_simplefin_account: "SimpleFIN-account wijzigen"
       troubleshoot: "Problemen oplossen"
       enable: "Account inschakelen"
       disable: "Account uitschakelen"
@@ -90,9 +88,6 @@ nl:
       enable_category_matcher_hint: "Indien ingeschakeld wordt de door de provider voorgestelde categorie toegepast op geïmporteerde transacties. Schakel uit om nieuwe transacties zonder categorie te laten."
     index:
       accounts: "Accounts"
-      financekit_accounts:
-        title: "Apple Wallet"
-        description: "Beheer Apple Wallet-koppelingen en synchronisatie in de Sure-app voor iOS."
       cancel_sync: "Synchronisatie annuleren"
       manual_accounts:
         other_accounts: "Andere accounts"
@@ -112,7 +107,6 @@ nl:
         connected_entry: "Account koppelen"
         connected_entry_eu: "EU-account koppelen"
         link_with_provider: "Koppel met %{provider}"
-        lunchflow_entry: "Lunch Flow-account koppelen"
         manual_entry: "Accountsaldo invoeren"
         title: "Hoe wilt u het toevoegen?"
       title: "Wat wilt u toevoegen?"
@@ -230,7 +224,6 @@ nl:
       title: "Account ontkoppelen van provider?"
       description_html: "U staat op het punt om <strong>%{account_name}</strong> te ontkoppelen van <strong>%{provider_name}</strong>. Dit zal het omzetten naar een handmatig account."
       warning_title: "Wat dit betekent"
-      warning_wallet_connection: "Alle accounts in deze Apple Wallet-koppeling worden ontkoppeld. Hun transacties en saldi blijven behouden. U kunt opnieuw koppelen via de Sure-app voor iOS met een nieuwe Wallet-configuratie."
       warning_no_sync: "Het account zal niet langer automatisch synchroniseren met uw provider"
       warning_manual_updates: "U moet handmatig transacties toevoegen en saldi bijwerken"
       warning_transactions_kept: "Alle bestaande transacties en saldi blijven behouden"

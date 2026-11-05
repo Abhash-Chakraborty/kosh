@@ -47,9 +47,6 @@ nl:
       name: "Naam"
       new_holding: "Nieuwe activiteit"
       no_holdings: "Geen posities om weer te geven."
-      positions:
-        one: "%{count} positie"
-        other: "%{count} posities"
       return: "Totaal rendement"
       weight: "Gewicht"
     missing_price_tooltip:
