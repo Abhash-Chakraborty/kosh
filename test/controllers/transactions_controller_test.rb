@@ -1987,7 +1987,7 @@ end
     # Recurring detection copies transaction.merchant_id, which can point at a
     # shared ProviderMerchant (not just a family-owned FamilyMerchant) -- e.g.
     # ProviderMerchant::Enhancer updates these after the recurring row exists.
-    provider_merchant = ProviderMerchant.create!(name: "Provider Merchant Original", source: "enable_banking")
+    provider_merchant = ProviderMerchant.create!(name: "Provider Merchant Original", source: "synth")
     recurring = recurring_transactions(:netflix_subscription)
     recurring.update!(merchant: provider_merchant, name: nil)
 
