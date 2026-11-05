@@ -1152,11 +1152,9 @@ class Account::ProviderImportAdapter
     end
 
     # A protected entry keeps its name, so the values that name was built from have
-    # to stay as well. Rule::ConditionFilter::TransactionName rebuilds a Plaid name
-    # from the stored original_description; refreshing that value while the name
-    # stays put would make the rebuilt name disagree with the real one, and flip
-    # `=` and `!=` rules on the entry. The drawer shows the kept value too, so it
-    # agrees with the name the user sees.
+    # to stay as well: refreshing them while the name stays put would make the
+    # stored values disagree with the name. The drawer shows the kept value too, so
+    # it agrees with the name the user sees.
     #
     # A key with nothing stored yet takes the incoming value: a row imported before
     # the key existed was never combined, so there is nothing to keep in step.
