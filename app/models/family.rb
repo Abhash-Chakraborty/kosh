@@ -60,6 +60,7 @@ class Family < ApplicationRecord
   has_many :transactions, through: :accounts
   has_many :rules, dependent: :destroy
   has_many :payment_messages, dependent: :destroy
+  has_many :reminders, dependent: :destroy
   has_many :rule_groups, dependent: :destroy
   has_many :trades, through: :accounts
   has_many :holdings, through: :accounts
