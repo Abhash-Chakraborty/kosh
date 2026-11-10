@@ -21,9 +21,11 @@ class HomeCashFlowTest < ApplicationSystemTestCase
     assert_selector "#cashflow-preview svg .sankey-link"
     assert_no_selector "[data-controller='sankey-chart']"
 
+    # The header button only fades in on hover, which headless Chrome may not
+    # report, so it is checked for being shown and clicked directly.
     section = find("[data-section-key='cashflow_sankey']")
-    section.hover
-    section.find("button[data-action='click->cashflow-expand#open']").click
+    expand = section.find("button[data-action='click->cashflow-expand#open']:not([hidden])", visible: :all)
+    expand.execute_script("this.click()")
     within "#cashflow-preview-expanded-dialog[open]" do
       assert_selector "svg .sankey-link"
       find("button[data-action='DS--dialog#close']").click
