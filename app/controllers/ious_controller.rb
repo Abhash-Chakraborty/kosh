@@ -5,7 +5,7 @@ class IousController < ApplicationController
   before_action :set_iou, only: %i[edit update destroy]
 
   def index
-    ious = Current.family.ious.includes(:account, payments: { entry: :account }).by_due_date.to_a
+    ious = Current.family.ious.includes(:account, :project, payments: { entry: :account }).by_due_date.to_a
     open_ious, @settled_ious = ious.partition { |iou| !iou.settled? }
 
     @open_groups = open_ious
@@ -25,7 +25,8 @@ class IousController < ApplicationController
   def new
     @iou = Current.family.ious.new(
       direction: params[:direction].presence_in(Iou::DIRECTIONS) || "owed_to_me",
-      currency: Current.family.primary_currency_code
+      currency: Current.family.primary_currency_code,
+      project: Current.family.projects.find_by(id: params[:project_id].presence)
     )
     set_form_options
   end
@@ -71,23 +72,27 @@ class IousController < ApplicationController
       permitted = submitted.permit(:direction, :person, :description, :amount, :currency, :due_on, :notes)
       permitted[:account_id] = Current.user.accessible_accounts.find_by(id: submitted[:account_id].presence)&.id if submitted.key?(:account_id)
       permitted[:category_id] = Current.family.categories.find_by(id: submitted[:category_id].presence)&.id if submitted.key?(:category_id)
+      permitted[:project_id] = Current.family.projects.find_by(id: submitted[:project_id].presence)&.id if submitted.key?(:project_id)
       permitted
     end
 
     def set_form_options
       @accounts = form_accounts
       @categories = Current.family.categories.alphabetically_by_hierarchy.to_a
+      @projects = Current.family.projects.active.or(Current.family.projects.where(id: @iou.project_id)).ordered.to_a
     end
 
     def form_accounts
       Current.user.accessible_accounts.active.alphabetically.includes(:account_providers, logo_attachment: :blob).to_a
     end
 
+    # Back to the project's page when the IOU was added from there.
     def redirect_after_save(notice)
       flash[:notice] = notice
+      path = params[:from_project].present? && @iou.project ? project_path(@iou.project) : ious_path
       respond_to do |format|
-        format.html { redirect_to ious_path }
-        format.turbo_stream { render turbo_stream: turbo_stream.action(:redirect, ious_path) }
+        format.html { redirect_to path }
+        format.turbo_stream { render turbo_stream: turbo_stream.action(:redirect, path) }
       end
     end
 end

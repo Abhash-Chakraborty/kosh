@@ -1,0 +1,112 @@
+<% content_for :page_header do %>
+  <div class="flex flex-wrap items-start justify-between gap-3 mb-6">
+    <div class="flex items-center gap-3 min-w-0">
+      <%= render DS::FilledIcon.new(icon: @project.icon, hex_color: @project.display_color, size: "lg") %>
+      <div class="space-y-0.5 min-w-0">
+        <h1 class="text-xl lg:text-3xl font-medium text-primary truncate"><%= @project.name %></h1>
+        <p class="text-sm text-secondary truncate"><%= project_subtitle(@project) %></p>
+      </div>
+    </div>
+    <% unless Current.user.guest? %>
+      <div class="flex items-center gap-2 shrink-0">
+        <%= render DS::Link.new(text: t(".edit"), variant: "outline", icon: "pencil", href: edit_project_path(@project), frame: :modal) %>
+        <%= render "projects/menu", project: @project %>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
+<div class="@container space-y-6 pb-12 max-w-4xl">
+  <% if @project.archived? %>
+    <%= render DS::Alert.new(message: t(".archived_notice", date: l(@project.archived_at.to_date, format: :long)), variant: :info) %>
+  <% end %>
+
+  <% if @accounts.size > 1 %>
+    <%= styled_form_with url: project_path(@project), method: :get, class: "max-w-xs", data: { controller: "auto-submit-form", turbo_action: "advance" } do |f| %>
+      <%= f.select :account_id,
+            options_for_select(project_account_options(@accounts), @account&.id),
+            { label: t(".account_filter"), include_blank: t(".all_accounts") },
+            { data: { auto_submit_form_target: "auto" } } %>
+    <% end %>
+  <% end %>
+
+  <section class="grid grid-cols-2 @2xl:grid-cols-3 gap-3" aria-label="<%= t(".totals") %>">
+    <%= render "projects/stat", label: t(".spent"), value: format_money(@totals.spent) %>
+    <%= render "projects/stat", label: t(".received"), value: format_money(@totals.received) %>
+    <%= render "projects/stat", label: t(".net"), value: format_money(@totals.net) %>
+    <% if @totals.owed_to_you.positive? %>
+      <%= render "projects/stat", label: t(".owed_to_you"), value: format_money(@totals.owed_to_you) %>
+    <% end %>
+    <% if @totals.you_owe.positive? %>
+      <%= render "projects/stat", label: t(".you_owe"), value: format_money(@totals.you_owe) %>
+    <% end %>
+  </section>
+
+  <% if @totals.unconverted_count.positive? %>
+    <p class="text-xs text-secondary -mt-3"><%= t(".unconverted", count: @totals.unconverted_count) %></p>
+  <% end %>
+
+  <% if @project.budget %>
+    <%= render DS::Card.new(class: "gap-2 p-4") do %>
+      <div class="flex items-baseline justify-between gap-2">
+        <p class="text-sm font-medium text-primary"><%= t(".budget") %></p>
+        <p class="text-sm text-secondary tabular-nums privacy-sensitive"><%= t("projects.project.of_budget", amount: format_money(@project.budget_money)) %></p>
+      </div>
+      <%= render "projects/budget_bar", project: @project, totals: @totals %>
+    <% end %>
+  <% end %>
+
+  <% if @totals.transaction_count.positive? %>
+    <div class="grid grid-cols-1 @2xl:grid-cols-2 gap-3">
+      <%= render "projects/breakdown", title: t(".by_category"), rows: @totals.by_category, fallback_name: t(".uncategorized") %>
+      <%= render "projects/breakdown", title: t(".by_account"), rows: @totals.by_account, fallback_name: nil %>
+    </div>
+  <% end %>
+
+  <section class="space-y-2">
+    <h2 class="text-sm font-medium text-primary"><%= t(".transactions") %></h2>
+    <% if @entries.any? %>
+      <div class="rounded-xl bg-container shadow-border-xs divide-y divide-primary">
+        <% @entries.each do |entry| %>
+          <%= render "projects/entry", entry: entry, counted: @counted_entry_ids.include?(entry.id) %>
+        <% end %>
+      </div>
+      <% if @more_entries %>
+        <p class="text-xs text-secondary"><%= t(".more_transactions", count: @entries.size) %></p>
+      <% end %>
+    <% else %>
+      <%= render DS::Card.new(class: "p-4") do %>
+        <p class="text-sm text-secondary"><%= t(".no_transactions") %></p>
+      <% end %>
+    <% end %>
+  </section>
+
+  <section class="space-y-2">
+    <div class="flex items-center justify-between gap-2">
+      <h2 class="text-sm font-medium text-primary"><%= t(".ious") %></h2>
+      <% unless Current.user.guest? %>
+        <%= render DS::Link.new(text: t(".add_iou"), variant: "ghost", size: "sm", icon: "plus", href: new_iou_path(project_id: @project.id, from_project: 1), frame: :modal) %>
+      <% end %>
+    </div>
+    <% if @ious.any? %>
+      <div class="@container rounded-xl bg-container shadow-border-xs divide-y divide-primary">
+        <% @ious.each do |iou| %>
+          <%= render "ious/iou", iou: iou %>
+        <% end %>
+      </div>
+    <% else %>
+      <%= render DS::Card.new(class: "p-4") do %>
+        <p class="text-sm text-secondary"><%= t(".no_ious") %></p>
+      <% end %>
+    <% end %>
+  </section>
+
+  <% if @project.notes.present? %>
+    <section class="space-y-2">
+      <h2 class="text-sm font-medium text-primary"><%= t(".notes") %></h2>
+      <%= render DS::Card.new(class: "p-4") do %>
+        <p class="text-sm text-secondary whitespace-pre-line"><%= @project.notes %></p>
+      <% end %>
+    </section>
+  <% end %>
+</div>

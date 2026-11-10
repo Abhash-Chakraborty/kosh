@@ -34,6 +34,14 @@ module IousHelper
     iou.owed_to_me? ? t("ious.iou.into_account", account: account.name) : t("ious.iou.from_account", account: account.name)
   end
 
+  # Direction, account and project, for the line under an IOU's description.
+  # The project links to its page.
+  def iou_details(iou)
+    parts = [ iou_direction_label(iou), iou_account_label(iou.account, iou) ].compact
+    parts << link_to(iou.project.name, project_path(iou.project), class: "underline-offset-2 hover:text-primary hover:underline") if iou.project
+    safe_join(parts, " · ")
+  end
+
   def iou_direction_options
     Iou::DIRECTIONS.map { |direction| [ t("ious.form.directions.#{direction}"), direction ] }
   end

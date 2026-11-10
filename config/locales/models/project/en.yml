@@ -1,0 +1,23 @@
+---
+en:
+  activerecord:
+    models:
+      project: Project
+    attributes:
+      project:
+        budget: Budget
+        color: Color
+        currency: Currency
+        end_on: End date
+        kind: Kind
+        name: Name
+        notes: Notes
+        start_on: Start date
+      iou:
+        project: Project
+    errors:
+      models:
+        project:
+          attributes:
+            end_on:
+              before_start: can't be before the start date

@@ -49,5 +49,14 @@ json.payments iou.payments do |payment|
   json.account_id(visible ? payment.entry.account_id : nil)
 end
 
+if iou.project
+  json.project do
+    json.id iou.project.id
+    json.name iou.project.name
+  end
+else
+  json.project nil
+end
+
 json.created_at iou.created_at.iso8601
 json.updated_at iou.updated_at.iso8601

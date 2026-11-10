@@ -11,6 +11,7 @@ class Iou < ApplicationRecord
   belongs_to :family
   belongs_to :account, optional: true
   belongs_to :category, optional: true
+  belongs_to :project, optional: true
 
   # Removing an IOU keeps the transactions its payments made: that money moved.
   has_many :payments, -> { order(:date, :created_at) }, class_name: "IouPayment", inverse_of: :iou, dependent: :delete_all
@@ -25,6 +26,7 @@ class Iou < ApplicationRecord
   validates :amount, numericality: { greater_than: 0 }
   validate :account_in_family
   validate :category_in_family
+  validate :project_in_family
   validate :amount_covers_payments, if: :persisted?
   validate :terms_unchanged_after_payments, if: -> { persisted? && (currency_changed? || direction_changed?) }
 
@@ -115,6 +117,12 @@ class Iou < ApplicationRecord
       return if category.nil? || category.family_id == family_id
 
       errors.add(:category, :invalid)
+    end
+
+    def project_in_family
+      return if project.nil? || project.family_id == family_id
+
+      errors.add(:project, :invalid)
     end
 
     def amount_covers_payments

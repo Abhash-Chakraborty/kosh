@@ -552,6 +552,17 @@ Rails.application.routes.draw do
     resources :payments, only: %i[new create destroy], controller: "iou_payments"
   end
 
+  namespace :projects do
+    resource :assignment, only: %i[new create]
+  end
+  resources :projects do
+    member do
+      patch :archive
+      patch :unarchive
+    end
+  end
+  patch "transactions/:transaction_id/project", to: "transaction_projects#update", as: :transaction_project
+
   resources :merchants, only: :show
 
   resources :family_merchants, only: %i[index new create edit update destroy] do
@@ -856,6 +867,12 @@ Rails.application.routes.draw do
       resources :payment_messages, only: [ :index, :create ]
       resources :ious, only: [ :index, :show, :create, :update, :destroy ] do
         post :payments, on: :member, action: :create_payment
+      end
+      resources :projects, only: [ :index, :show, :create, :update, :destroy ] do
+        member do
+          post :transactions, action: :assign_transactions
+          delete :transactions, action: :unassign_transactions
+        end
       end
 
       resources :transactions, only: [ :index, :show, :create, :update, :destroy ] do

@@ -206,7 +206,8 @@ class PortfoliosControllerTest < ActionDispatch::IntegrationTest
     mobile = css_select("nav[data-viewport-target=bottomNav] a").map { |link| link["href"] }
 
     assert_includes desktop, portfolio_path
-    assert_equal desktop - [ portfolio_path ], mobile - [ chats_path ]
+    # Projects (fork) is desktop-only too; phones reach it from Home.
+    assert_equal desktop - [ portfolio_path, projects_path ], mobile - [ chats_path ]
     assert_includes mobile, chats_path if @family.assistant_enabled?
   end
 

@@ -1,5 +1,6 @@
 class ReportsController < ApplicationController
   include Periodable
+  include ForkReportsSections
 
   # Allow API key authentication for exports (for Google Sheets integration)
   # Note: We run authentication_for_export which handles both session and API key auth
@@ -215,7 +216,7 @@ class ReportsController < ApplicationController
           visible: @has_accounts,
           collapsible: true
         }
-      ]
+      ] + fork_reports_sections
 
       # Order sections according to user preference
       section_order = Current.user.reports_section_order

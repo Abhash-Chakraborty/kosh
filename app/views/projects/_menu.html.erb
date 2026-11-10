@@ -1,0 +1,21 @@
+<%# locals: (project:) %>
+<%= render DS::Menu.new do |menu| %>
+  <% if project.archived? %>
+    <% menu.with_item(variant: "button", text: t("projects.menu.unarchive"), href: unarchive_project_path(project), icon: "archive-restore", method: :patch) %>
+  <% else %>
+    <% menu.with_item(variant: "button", text: t("projects.menu.archive"), href: archive_project_path(project), icon: "archive", method: :patch) %>
+  <% end %>
+  <% menu.with_item(
+        variant: "button",
+        text: t("projects.menu.delete"),
+        href: project_path(project),
+        icon: "trash-2",
+        method: :delete,
+        confirm: CustomConfirm.new(
+          destructive: true,
+          title: t("projects.menu.delete_title"),
+          body: t("projects.menu.delete_body"),
+          btn_text: t("projects.menu.delete")
+        )
+      ) %>
+<% end %>

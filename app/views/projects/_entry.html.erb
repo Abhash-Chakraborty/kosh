@@ -1,0 +1,15 @@
+<%# locals: (entry:, counted:) %>
+<%= link_to transaction_path(entry), data: { turbo_frame: "drawer", turbo_prefetch: false }, class: "flex items-center gap-3 p-3 min-w-0 hover:bg-container-hover first:rounded-t-xl last:rounded-b-xl" do %>
+  <div class="min-w-0 flex-1">
+    <p class="text-sm font-medium text-primary truncate"><%= entry.name %></p>
+    <p class="text-xs text-secondary truncate">
+      <%= [ l(entry.date, format: :short), entry.account.name, entry.entryable.category&.name ].compact.join(" · ") %>
+    </p>
+  </div>
+  <div class="shrink-0 text-right">
+    <p class="text-sm tabular-nums whitespace-nowrap privacy-sensitive <%= entry.amount.negative? ? "text-success" : "text-primary" %>"><%= format_money(-entry.amount_money) %></p>
+    <% unless counted %>
+      <p class="text-xs text-secondary whitespace-nowrap"><%= t("projects.entry.not_counted") %></p>
+    <% end %>
+  </div>
+<% end %>

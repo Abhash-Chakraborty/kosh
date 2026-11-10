@@ -3,7 +3,10 @@
 module ForkNavHelper
   def fork_nav_items
     [
-      { name: t("layouts.application.nav.owed"), path: ious_path, icon: "hand-coins", icon_custom: false, active: page_active?(ious_path) }
+      { name: t("layouts.application.nav.owed"), path: ious_path, icon: "hand-coins", icon_custom: false, active: page_active?(ious_path) },
+      # Phones reach projects from the Projects section on Home; the bottom
+      # bar has no room for another item.
+      { name: t("layouts.application.nav.projects"), path: projects_path, icon: "folder-kanban", icon_custom: false, active: page_active?(projects_path), desktop_only: true }
     ]
   end
 

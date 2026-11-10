@@ -39,7 +39,7 @@ module Api
           return render_validation_error("status must be one of: #{STATUSES.join(", ")}")
         end
 
-        ious = family.ious.includes(:account, :category, payments: :entry).by_due_date
+        ious = family.ious.includes(:account, :category, :project, payments: :entry).by_due_date
         ious = ious.where(direction: params[:direction]) if params[:direction].present?
         ious = ious.outstanding if params[:status] == "open"
         ious = ious.settled if params[:status] == "settled"
@@ -142,6 +142,13 @@ module Api
             return render_validation_error("Unknown category id") if submitted[:category_id].present? && category.nil?
 
             permitted[:category_id] = category&.id
+          end
+
+          if submitted.key?(:project_id)
+            project = family.projects.find_by(id: submitted[:project_id].to_s) if submitted[:project_id].present?
+            return render_validation_error("Unknown project id") if submitted[:project_id].present? && project.nil?
+
+            permitted[:project_id] = project&.id
           end
 
           permitted

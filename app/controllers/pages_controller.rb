@@ -1,5 +1,6 @@
 class PagesController < ApplicationController
   include Periodable
+  include ForkDashboardSections
 
   # Per-widget dashboard layout guardrails. Deterministic defaults the masonry
   # packer reads; users may override a grow widget's height via presets.
@@ -20,7 +21,7 @@ class PagesController < ApplicationController
     "investment_summary" => { col_span: "single", grow: false, min_height: 0, width_toggle: true },
     "net_worth_chart"    => { col_span: "single", grow: true,  min_height: 208, width_toggle: true },
     "balance_sheet"      => { col_span: "single", grow: false, min_height: 0, width_toggle: true }
-  }.freeze
+  }.merge(ForkDashboardSections::LAYOUTS).freeze
 
   # Number of consecutive months (ending at the selected month) shown as
   # bars in the "money_flow" dashboard widget.
@@ -257,7 +258,7 @@ class PagesController < ApplicationController
             collapsible: true
           }
         }
-      }
+      }.merge(fork_dashboard_section_builders)
     end
 
     # Just enough for the hidden list, without running the widget's queries.
@@ -267,6 +268,7 @@ class PagesController < ApplicationController
     # neither does the feed.
     def hidden_dashboard_section(key)
       return nil if key == "insights_feed" && !preview_features_enabled?
+      return fork_hidden_dashboard_section(key) if ForkDashboardSections::LAYOUTS.key?(key)
 
       visible = case key
       when "investment_summary" then investment_summary_available?
