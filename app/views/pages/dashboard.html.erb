@@ -173,7 +173,7 @@
                 <span data-icon="collapse" aria-hidden="true" style="display:none"><%= icon("chevrons-down-up", size: "sm", class: "!w-3.5 !h-3.5") %></span>
               </button>
             <% end %>
-            <% if section[:key] == "cashflow_sankey" && section[:locals][:sankey_data][:links].present? %>
+            <% if section[:key] == "cashflow_sankey" %>
               <button
                 type="button"
                 class="flex items-center justify-center w-6 h-6 rounded-md text-secondary hover:text-primary hover:bg-container-inset-hover transition-colors opacity-100 lg:opacity-0 lg:group-hover:opacity-100 ml-auto lg:ml-0"
@@ -261,14 +261,6 @@
         </div>
         <div class="py-4" data-dashboard-section-target="content">
           <%= render partial: section[:partial], locals: section[:locals] %>
-          <%# Preview features reveal the opt-in. The comparison chart itself
-              stays hidden until this user turns that preference on. %>
-          <% if section[:key] == "cashflow_sankey" && preview_features_enabled? %>
-            <%= render "pages/dashboard/cashflow_preview_opt_in" %>
-            <% if Current.user.cashflow_preview_enabled? %>
-              <%= render "pages/dashboard/cashflow_preview", period: @period, legacy_data: section[:locals][:sankey_data] %>
-            <% end %>
-          <% end %>
         </div>
       </section>
     <% end %>

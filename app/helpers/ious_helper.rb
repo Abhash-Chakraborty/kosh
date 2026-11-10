@@ -37,4 +37,9 @@ module IousHelper
   def iou_direction_options
     Iou::DIRECTIONS.map { |direction| [ t("ious.form.directions.#{direction}"), direction ] }
   end
+
+  # Open IOUs for the cash flow chart, each opening the Owed page.
+  def iou_pending_flows(period)
+    Iou::PendingFlows.new(Current.family, period: period).as_json.map { |flow| flow.merge(url: ious_path) }
+  end
 end
