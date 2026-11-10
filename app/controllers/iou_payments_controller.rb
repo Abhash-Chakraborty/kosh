@@ -10,8 +10,8 @@ class IouPaymentsController < ApplicationController
   end
 
   def create
-    attrs = params.require(:iou_payment).permit(:amount, :date, :account_id)
-    account = writable_accounts.find { |a| a.id == attrs[:account_id] }
+    attrs = params.require(:iou_payment).permit(:amount, :date)
+    account = writable_accounts.find { |a| a.id == params.dig(:iou_payment, :account_id).to_s }
     @payment = @iou.record_payment(amount: attrs[:amount], date: attrs[:date], account: account)
 
     if @payment.persisted?

@@ -115,16 +115,25 @@ module Api
         # Ids are looked up inside what the caller may see; an unknown one is
         # an error rather than silently dropped.
         def iou_params
-          permitted = params.require(:iou).permit(:direction, :person, :description, :amount, :currency, :due_on, :account_id, :category_id, :notes)
+          submitted = params.require(:iou)
+          permitted = submitted.permit(:direction, :person, :description, :amount, :currency, :due_on, :notes)
 
           if permitted[:due_on].present? && parse_date(permitted[:due_on]) == :invalid
             return render_validation_error("due_on must be a date like 2026-11-15")
           end
-          if permitted[:account_id].present? && !family.accounts.accessible_by(current_resource_owner).exists?(id: permitted[:account_id])
-            return render_validation_error("Unknown account id")
+
+          if submitted.key?(:account_id)
+            account = family.accounts.accessible_by(current_resource_owner).find_by(id: submitted[:account_id].to_s) if submitted[:account_id].present?
+            return render_validation_error("Unknown account id") if submitted[:account_id].present? && account.nil?
+
+            permitted[:account_id] = account&.id
           end
-          if permitted[:category_id].present? && !family.categories.exists?(id: permitted[:category_id])
-            return render_validation_error("Unknown category id")
+
+          if submitted.key?(:category_id)
+            category = family.categories.find_by(id: submitted[:category_id].to_s) if submitted[:category_id].present?
+            return render_validation_error("Unknown category id") if submitted[:category_id].present? && category.nil?
+
+            permitted[:category_id] = category&.id
           end
 
           permitted

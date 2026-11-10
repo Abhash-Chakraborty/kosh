@@ -67,9 +67,10 @@ class IousController < ApplicationController
     # Accounts are looked up inside what this user may see, so a crafted id
     # can't point an IOU at someone else's private account.
     def iou_params
-      permitted = params.require(:iou).permit(:direction, :person, :description, :amount, :currency, :due_on, :account_id, :category_id, :notes)
-      permitted[:account_id] = Current.user.accessible_accounts.find_by(id: permitted[:account_id])&.id if permitted.key?(:account_id)
-      permitted[:category_id] = Current.family.categories.find_by(id: permitted[:category_id])&.id if permitted.key?(:category_id)
+      submitted = params.require(:iou)
+      permitted = submitted.permit(:direction, :person, :description, :amount, :currency, :due_on, :notes)
+      permitted[:account_id] = Current.user.accessible_accounts.find_by(id: submitted[:account_id].presence)&.id if submitted.key?(:account_id)
+      permitted[:category_id] = Current.family.categories.find_by(id: submitted[:category_id].presence)&.id if submitted.key?(:category_id)
       permitted
     end
 
