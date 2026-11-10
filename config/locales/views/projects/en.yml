@@ -1,0 +1,125 @@
+---
+en:
+  projects:
+    kinds:
+      project: Project
+      trip: Trip
+    dates:
+      from: From %{date}
+      until: Until %{date}
+    index:
+      title: Projects
+      subtitle: What a trip or a project costs, across your accounts.
+      new: New project
+      empty_title: No projects yet
+      empty_description: Make one, then add transactions to it from Transactions or a transaction's details.
+      empty_archived: No archived projects.
+      show_archived:
+        one: Show 1 archived
+        other: Show %{count} archived
+      show_active: Show active projects
+      archived_heading: Archived
+    project:
+      spent: Spent
+      of_budget: of %{amount}
+      owed_to_you: "%{amount} owed to you"
+      you_owe: "%{amount} you owe"
+      archived: Archived
+    budget_bar:
+      label: "%{percent}% of budget spent"
+      left: "%{amount} left"
+      over: "%{amount} over"
+    entry:
+      not_counted: Not counted
+    show:
+      totals: Totals
+      notes: Notes
+      all_accounts: All accounts
+      account_filter: Account
+      spent: Spent
+      received: Received
+      net: Net
+      owed_to_you: Owed to you
+      you_owe: You owe
+      budget: Budget
+      no_budget: No budget set.
+      unconverted:
+        one: One amount in another currency has no exchange rate, so it isn't counted.
+        other: "%{count} amounts in other currencies have no exchange rate, so they aren't counted."
+      by_category: By category
+      by_account: By account
+      uncategorized: Uncategorized
+      transactions: Transactions
+      no_transactions: No transactions yet. Select some in Transactions and choose Add to project, or pick this project in a transaction's details.
+      more_transactions: Showing the latest %{count}.
+      ious: IOUs
+      no_ious: No IOUs in this project.
+      add_iou: Add IOU
+      edit: Edit
+      archived_notice: Archived %{date}.
+    menu:
+      edit: Edit
+      archive: Archive
+      unarchive: Restore
+      delete: Delete
+      delete_title: Delete this project?
+      delete_body: Its transactions and IOUs stay; they just leave the project.
+      more: More actions
+    form:
+      name: Name
+      name_placeholder: Lisbon in May
+      kind: Kind
+      color: Color
+      start_on: Starts
+      end_on: Ends
+      budget: Budget
+      budget_hint: Optional. Spending is measured against it.
+      notes: Notes
+      cancel: Cancel
+      create: Create
+      save: Save
+    new:
+      title: New project
+    edit:
+      title: Edit project
+    create:
+      success: Project created
+    update:
+      success: Project saved
+    archive:
+      success: Project archived
+    unarchive:
+      success: Project restored
+    destroy:
+      success: Project deleted
+    transaction_project:
+      label: Project
+      none: No project
+    assignments:
+      new:
+        title: Add to project
+        project: Project
+        none: Remove from project
+        hint: Transfers between your own accounts are kept but don't count towards totals.
+        no_projects: You don't have any active projects yet.
+        create_project: New project
+        cancel: Cancel
+        submit: Save
+      create:
+        added:
+          one: 1 transaction added to %{project}
+          other: "%{count} transactions added to %{project}"
+        removed:
+          one: 1 transaction removed from its project
+          other: "%{count} transactions removed from their projects"
+    summary:
+      title: Projects
+      empty: Track what a trip or a project costs.
+      view_all: All projects
+  transactions:
+    selection_bar:
+      add_to_project: Add to project
+  pages:
+    dashboard:
+      projects:
+        title: Projects

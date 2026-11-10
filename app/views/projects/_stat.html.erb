@@ -1,0 +1,5 @@
+<%# locals: (label:, value:) %>
+<%= render DS::Card.new(class: "gap-1 p-4 min-w-0") do %>
+  <p class="text-xs text-secondary truncate"><%= label %></p>
+  <p class="text-lg @md:text-2xl font-medium text-primary tabular-nums truncate privacy-sensitive"><%= value %></p>
+<% end %>

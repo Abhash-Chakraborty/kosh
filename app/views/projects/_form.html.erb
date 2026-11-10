@@ -1,0 +1,39 @@
+<%# locals: (project:) %>
+<%= styled_form_with model: project, class: "space-y-4" do |f| %>
+  <% if project.errors.any? %>
+    <%= render "shared/form_errors", model: project %>
+  <% end %>
+
+  <section class="space-y-2">
+    <%= f.text_field :name, label: t("projects.form.name"), placeholder: t("projects.form.name_placeholder"), required: true, autofocus: project.new_record?, maxlength: 255 %>
+    <%= f.select :kind, project_kind_options, { label: t("projects.form.kind") } %>
+
+    <fieldset class="space-y-1.5 px-1">
+      <legend class="text-xs text-secondary mb-1.5"><%= t("projects.form.color") %></legend>
+      <div class="flex flex-wrap gap-2">
+        <% Project::COLORS.each do |color| %>
+          <label class="cursor-pointer">
+            <%= f.radio_button :color, color, checked: project.display_color == color, class: "sr-only peer", aria: { label: color } %>
+            <span class="block size-6 rounded-full peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-primary peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-focus-ring" style="background-color: <%= color %>"></span>
+          </label>
+        <% end %>
+      </div>
+    </fieldset>
+
+    <div class="grid grid-cols-2 gap-2">
+      <%= f.date_field :start_on, label: t("projects.form.start_on") %>
+      <%= f.date_field :end_on, label: t("projects.form.end_on") %>
+    </div>
+    <%= f.money_field :budget,
+          label: t("projects.form.budget"),
+          min: 0.01,
+          input_class: "privacy-sensitive privacy-sensitive-interactive" %>
+    <p class="text-xs text-secondary px-1"><%= t("projects.form.budget_hint") %></p>
+    <%= f.text_area :notes, label: t("projects.form.notes"), rows: 2 %>
+  </section>
+
+  <div class="flex justify-end gap-2">
+    <%= render DS::Button.new(text: t("projects.form.cancel"), variant: :secondary, data: { action: "DS--dialog#close" }) %>
+    <%= render DS::Button.new(text: project.new_record? ? t("projects.form.create") : t("projects.form.save"), type: :submit) %>
+  </div>
+<% end %>

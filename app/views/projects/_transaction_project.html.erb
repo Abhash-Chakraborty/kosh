@@ -1,0 +1,14 @@
+<%# locals: (entry:, can_annotate:) %>
+<% current = ProjectTransaction.project_for(entry.transaction) %>
+<% options = transaction_project_options(current) %>
+<div id="<%= dom_id(entry, :project) %>">
+  <% if options.any? && !entry.split_parent? %>
+    <%= styled_form_with scope: :transaction_project, url: transaction_project_path(entry), method: :patch,
+          data: { controller: "auto-submit-form" } do |f| %>
+      <%= f.select :project_id,
+            options_for_select(options, current&.id),
+            { label: t("projects.transaction_project.label"), include_blank: t("projects.transaction_project.none") },
+            { disabled: !can_annotate, data: { auto_submit_form_target: "auto" } } %>
+    <% end %>
+  <% end %>
+</div>

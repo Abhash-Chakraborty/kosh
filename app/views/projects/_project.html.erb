@@ -1,0 +1,33 @@
+<%# locals: (project:, totals:) %>
+<%= link_to project_path(project), id: dom_id(project), class: "block rounded-xl bg-container shadow-border-xs p-4 space-y-3 transition-colors hover:bg-container-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring" do %>
+  <div class="flex items-center gap-3 min-w-0">
+    <%= render DS::FilledIcon.new(icon: project.icon, hex_color: project.display_color, size: "md") %>
+    <div class="min-w-0 flex-1">
+      <p class="text-sm font-medium text-primary truncate"><%= project.name %></p>
+      <p class="text-xs text-secondary truncate"><%= project_subtitle(project) %></p>
+    </div>
+    <% if project.archived? %>
+      <%= render DS::Pill.new(label: t("projects.project.archived"), tone: :gray) %>
+    <% end %>
+  </div>
+
+  <div class="space-y-1.5">
+    <div class="flex items-baseline justify-between gap-2">
+      <p class="text-lg font-medium text-primary tabular-nums privacy-sensitive"><%= format_money(totals.spent) %></p>
+      <% if project.budget %>
+        <p class="text-xs text-secondary tabular-nums privacy-sensitive"><%= t("projects.project.of_budget", amount: format_money(project.budget_money)) %></p>
+      <% else %>
+        <p class="text-xs text-secondary"><%= t("projects.project.spent") %></p>
+      <% end %>
+    </div>
+    <% if project.budget %>
+      <%= render "projects/budget_bar", project: project, totals: totals %>
+    <% end %>
+  </div>
+
+  <% owed = [ (t("projects.project.owed_to_you", amount: format_money(totals.owed_to_you)) if totals.owed_to_you.positive?),
+              (t("projects.project.you_owe", amount: format_money(totals.you_owe)) if totals.you_owe.positive?) ].compact %>
+  <% if owed.any? %>
+    <p class="text-xs text-secondary truncate privacy-sensitive"><%= owed.join(" · ") %></p>
+  <% end %>
+<% end %>

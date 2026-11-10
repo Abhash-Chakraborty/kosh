@@ -1,0 +1,12 @@
+<%# locals: (project:, totals:) %>
+<% percent = totals.budget_used_percent.to_i %>
+<div class="space-y-1">
+  <div class="h-1.5 w-full rounded-full bg-surface-inset overflow-hidden" role="progressbar"
+    aria-valuemin="0" aria-valuemax="100" aria-valuenow="<%= [ percent, 100 ].min %>"
+    aria-label="<%= t("projects.budget_bar.label", percent: percent) %>">
+    <div class="h-full rounded-full <%= totals.over_budget? ? "bg-destructive" : "bg-inverse" %>" style="width: <%= project_budget_bar_width(totals) %>%"></div>
+  </div>
+  <p class="text-xs tabular-nums privacy-sensitive <%= totals.over_budget? ? "text-destructive" : "text-secondary" %>">
+    <%= totals.over_budget? ? t("projects.budget_bar.over", amount: format_money(totals.budget_left.abs)) : t("projects.budget_bar.left", amount: format_money(totals.budget_left)) %>
+  </p>
+</div>

@@ -843,6 +843,14 @@ RSpec.configure do |config|
                 }
               },
               payments: { type: :array, items: { '$ref' => '#/components/schemas/IouPayment' } },
+              project: {
+                type: :object,
+                nullable: true,
+                properties: {
+                  id: { type: :string, format: :uuid },
+                  name: { type: :string }
+                }
+              },
               created_at: { type: :string, format: :'date-time' },
               updated_at: { type: :string, format: :'date-time' }
             }
@@ -861,6 +869,7 @@ RSpec.configure do |config|
                   due_on: { type: :string, format: :date },
                   account_id: { type: :string, format: :uuid, description: 'Where the money lands (owed_to_me) or leaves from (i_owe)' },
                   category_id: { type: :string, format: :uuid, description: 'Category for the transaction a payment creates' },
+                  project_id: { type: :string, format: :uuid, nullable: true, description: 'Project or trip it belongs to' },
                   notes: { type: :string }
                 }
               }
@@ -873,6 +882,120 @@ RSpec.configure do |config|
             properties: {
               ious: { type: :array, items: { '$ref' => '#/components/schemas/Iou' } },
               pagination: { '$ref' => '#/components/schemas/Pagination' }
+            }
+          },
+          ProjectMoney: {
+            type: :object,
+            required: %w[amount decimal],
+            properties: {
+              amount: { type: :string, description: 'Formatted amount' },
+              decimal: { type: :string, description: 'Fixed-point amount' }
+            }
+          },
+          ProjectBreakdownRow: {
+            type: :object,
+            required: %w[name spent_decimal received_decimal],
+            properties: {
+              category_id: { type: :string, format: :uuid, nullable: true, description: 'By category only; null for uncategorized' },
+              account_id: { type: :string, format: :uuid, description: 'By account only' },
+              name: { type: :string, nullable: true },
+              spent_decimal: { type: :string },
+              received_decimal: { type: :string }
+            }
+          },
+          Project: {
+            type: :object,
+            required: %w[id name kind color icon currency archived created_at updated_at],
+            properties: {
+              id: { type: :string, format: :uuid },
+              name: { type: :string },
+              kind: { type: :string, enum: %w[project trip] },
+              color: { type: :string, description: 'Hex color' },
+              icon: { type: :string, description: 'Lucide icon name' },
+              start_on: { type: :string, format: :date, nullable: true },
+              end_on: { type: :string, format: :date, nullable: true },
+              currency: { type: :string },
+              budget: { type: :string, nullable: true, description: 'Formatted budget' },
+              budget_decimal: { type: :string, nullable: true },
+              notes: { type: :string, nullable: true },
+              archived: { type: :boolean },
+              archived_at: { type: :string, format: :'date-time', nullable: true },
+              created_at: { type: :string, format: :'date-time' },
+              updated_at: { type: :string, format: :'date-time' }
+            }
+          },
+          ProjectDetail: {
+            allOf: [
+              { '$ref' => '#/components/schemas/Project' },
+              {
+                type: :object,
+                required: %w[totals],
+                properties: {
+                  totals: {
+                    type: :object,
+                    description: "Over the accounts the caller can see, in the project's currency. " \
+                                 'Transfers between your own accounts and excluded transactions do not count.',
+                    properties: {
+                      spent: { '$ref' => '#/components/schemas/ProjectMoney' },
+                      received: { '$ref' => '#/components/schemas/ProjectMoney' },
+                      net: { '$ref' => '#/components/schemas/ProjectMoney' },
+                      owed_to_you: { '$ref' => '#/components/schemas/ProjectMoney' },
+                      you_owe: { '$ref' => '#/components/schemas/ProjectMoney' },
+                      budget_left: { allOf: [ { '$ref' => '#/components/schemas/ProjectMoney' } ], nullable: true },
+                      budget_used_percent: { type: :integer, nullable: true },
+                      transaction_count: { type: :integer },
+                      unconverted_count: { type: :integer, description: 'Transactions left out for lack of an exchange rate' },
+                      by_category: { type: :array, items: { '$ref' => '#/components/schemas/ProjectBreakdownRow' } },
+                      by_account: { type: :array, items: { '$ref' => '#/components/schemas/ProjectBreakdownRow' } }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          ProjectRequest: {
+            type: :object,
+            properties: {
+              project: {
+                type: :object,
+                properties: {
+                  name: { type: :string },
+                  kind: { type: :string, enum: %w[project trip] },
+                  color: { type: :string, description: 'Hex color like #4da568' },
+                  lucide_icon: { type: :string },
+                  start_on: { type: :string, format: :date },
+                  end_on: { type: :string, format: :date },
+                  budget: { type: :string, description: 'Greater than zero' },
+                  currency: { type: :string, description: 'Defaults to the family currency' },
+                  notes: { type: :string },
+                  archived: { type: :boolean, description: 'Update only' }
+                }
+              }
+            },
+            required: %w[project]
+          },
+          ProjectCollection: {
+            type: :object,
+            required: %w[projects pagination],
+            properties: {
+              projects: { type: :array, items: { '$ref' => '#/components/schemas/Project' } },
+              pagination: { '$ref' => '#/components/schemas/Pagination' }
+            }
+          },
+          ProjectTransactionsRequest: {
+            type: :object,
+            required: %w[transaction_ids],
+            properties: {
+              transaction_ids: { type: :array, items: { type: :string, format: :uuid }, description: 'Transaction ids (not entry ids), at most 500' }
+            }
+          },
+          ProjectTransactionsResult: {
+            type: :object,
+            required: %w[project_id transaction_ids ignored_ids],
+            properties: {
+              project_id: { type: :string, format: :uuid },
+              transaction_ids: { type: :array, items: { type: :string, format: :uuid }, description: 'Ids that were added or removed' },
+              ignored_ids: { type: :array, items: { type: :string }, description: "Ids not found, split parents, or in accounts you can't annotate" }
             }
           },
           RuleAction: {

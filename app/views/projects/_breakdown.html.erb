@@ -1,0 +1,18 @@
+<%# locals: (title:, rows:, fallback_name:) %>
+<%= render DS::Card.new(class: "gap-2 p-4 min-w-0") do %>
+  <h3 class="text-sm font-medium text-primary"><%= title %></h3>
+  <ul class="space-y-1.5">
+    <% rows.each do |row| %>
+      <li class="flex items-center gap-2 text-sm min-w-0">
+        <% if row.color %>
+          <span class="size-2 rounded-full shrink-0" style="background-color: <%= row.color %>" aria-hidden="true"></span>
+        <% end %>
+        <span class="text-secondary truncate flex-1" title="<%= row.name || fallback_name %>"><%= row.name || fallback_name %></span>
+        <span class="text-primary tabular-nums whitespace-nowrap privacy-sensitive"><%= format_money(row.spent) %></span>
+        <% if row.received.positive? %>
+          <span class="text-success tabular-nums whitespace-nowrap privacy-sensitive">+<%= format_money(row.received) %></span>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+<% end %>

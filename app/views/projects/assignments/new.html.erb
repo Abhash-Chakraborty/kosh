@@ -1,0 +1,26 @@
+<%= render DS::Dialog.new(variant: "drawer", frame: "bulk_transaction_edit_drawer") do |dialog| %>
+  <% dialog.with_header(title: t(".title")) %>
+
+  <% dialog.with_body do %>
+    <% if @projects.any? %>
+      <%= styled_form_with url: projects_assignment_path, scope: "project_assignment", class: "h-full flex flex-col justify-between gap-4", data: { turbo_frame: "_top" } do |form| %>
+        <div class="space-y-2">
+          <%= form.select :project_id,
+                @projects.map { |project| [ project.name, project.id ] },
+                { label: t(".project"), include_blank: t(".none"), selected: @projects.first.id } %>
+          <p class="text-xs text-secondary px-1"><%= t(".hint") %></p>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-auto">
+          <%= render DS::Button.new(text: t(".cancel"), variant: "ghost", data: { action: "click->DS--dialog#close" }) %>
+          <%= render DS::Button.new(text: t(".submit"), type: :submit, data: { bulk_select_scope_param: "project_assignment", action: "bulk-select#submitBulkRequest" }) %>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="space-y-3">
+        <p class="text-sm text-secondary"><%= t(".no_projects") %></p>
+        <%= render DS::Link.new(text: t(".create_project"), variant: "primary", icon: "plus", href: new_project_path, frame: "_top") %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

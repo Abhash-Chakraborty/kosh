@@ -148,4 +148,33 @@ class IousControllerTest < ActionDispatch::IntegrationTest
     assert_select "##{dom_id(@iou)}", text: /Owed to you/
     assert_select "##{dom_id(@iou)}", text: /Checking Account/, count: 0
   end
+
+  test "new from a project picks that project" do
+    project = projects(:lisbon)
+
+    get new_iou_url(project_id: project.id, from_project: 1)
+
+    assert_response :success
+    assert_select "input[type=hidden][name='iou[project_id]'][value='#{project.id}']"
+    assert_select "input[type=hidden][name=from_project]"
+  end
+
+  test "an IOU added from a project goes back to it" do
+    project = projects(:lisbon)
+
+    post ious_url, params: { from_project: "1", iou: {
+      direction: "i_owe", person: "Ana", description: "Hotel share", amount: "80", currency: "USD", project_id: project.id
+    } }
+
+    assert_redirected_to project_path(project)
+    assert_equal project, @family.ious.find_by(description: "Hotel share").project
+  end
+
+  test "an IOU row links to its project" do
+    @iou.update!(project: projects(:lisbon))
+
+    get ious_url
+
+    assert_select "##{dom_id(@iou)} a[href='#{project_path(projects(:lisbon))}']", text: "Lisbon trip"
+  end
 end

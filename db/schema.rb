@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_10_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_11_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -1555,11 +1555,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_090000) do
     t.uuid "family_id", null: false
     t.text "notes"
     t.string "person", null: false
+    t.uuid "project_id"
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_ious_on_account_id"
     t.index ["category_id"], name: "index_ious_on_category_id"
     t.index ["family_id", "person"], name: "index_ious_on_family_id_and_person"
     t.index ["family_id"], name: "index_ious_on_family_id"
+    t.index ["project_id"], name: "index_ious_on_project_id"
   end
 
   create_table "kraken_accounts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -2029,6 +2031,32 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_090000) do
     t.index ["family_id"], name: "index_plaid_items_on_family_id"
     t.index ["owner_id"], name: "index_plaid_items_on_owner_id"
     t.index ["plaid_id"], name: "index_plaid_items_on_plaid_id", unique: true
+  end
+
+  create_table "project_transactions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.uuid "project_id", null: false
+    t.uuid "transaction_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["project_id"], name: "index_project_transactions_on_project_id"
+    t.index ["transaction_id"], name: "index_project_transactions_on_transaction_id", unique: true
+  end
+
+  create_table "projects", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "archived_at"
+    t.decimal "budget", precision: 19, scale: 4
+    t.string "color"
+    t.datetime "created_at", null: false
+    t.string "currency", null: false
+    t.date "end_on"
+    t.uuid "family_id", null: false
+    t.string "kind", default: "project", null: false
+    t.string "lucide_icon"
+    t.string "name", null: false
+    t.text "notes"
+    t.date "start_on"
+    t.datetime "updated_at", null: false
+    t.index ["family_id"], name: "index_projects_on_family_id"
   end
 
   create_table "properties", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -3260,6 +3288,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_090000) do
   add_foreign_key "ious", "accounts", on_delete: :nullify
   add_foreign_key "ious", "categories", on_delete: :nullify
   add_foreign_key "ious", "families"
+  add_foreign_key "ious", "projects", on_delete: :nullify
   add_foreign_key "kraken_accounts", "kraken_items"
   add_foreign_key "kraken_items", "families"
   add_foreign_key "llm_usages", "families"
@@ -3287,6 +3316,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_090000) do
   add_foreign_key "plaid_accounts", "plaid_items"
   add_foreign_key "plaid_items", "families"
   add_foreign_key "plaid_items", "users", column: "owner_id", on_delete: :nullify
+  add_foreign_key "project_transactions", "projects", on_delete: :cascade
+  add_foreign_key "project_transactions", "transactions", on_delete: :cascade
+  add_foreign_key "projects", "families", on_delete: :cascade
   add_foreign_key "push_subscriptions", "users"
   add_foreign_key "questrade_accounts", "questrade_items"
   add_foreign_key "questrade_items", "families"

@@ -1,6 +1,4 @@
 <%# locals: (iou:) %>
-<% details = [ iou_direction_label(iou), iou_account_label(iou.account, iou) ].compact %>
-
 <div id="<%= dom_id(iou) %>" class="p-3 @lg:p-4 space-y-2">
   <div class="flex items-center gap-3">
     <div class="min-w-0 flex-1">
@@ -10,7 +8,7 @@
           <span class="<%= "text-destructive font-medium" if iou.overdue? %>"><%= iou_due_label(iou) %></span>
           <span aria-hidden="true">&middot;</span>
         <% end %>
-        <%= details.join(" · ") %>
+        <%= iou_details(iou) %>
       </p>
       <% if iou.notes.present? %>
         <p class="text-xs text-secondary truncate"><%= iou.notes %></p>

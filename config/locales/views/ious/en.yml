@@ -54,6 +54,8 @@ en:
       account_hint: Where the money lands, or leaves from, when it's paid.
       no_category: No category
       notes: Notes
+      project: Project
+      no_project: No project
       cancel: Cancel
       create: Add
       save: Save

@@ -1,0 +1,31 @@
+<%# locals: (projects:, accounts:, padded: false, **args) %>
+<div id="projects-summary" class="space-y-3 <%= "px-4" if padded %>">
+  <% if projects.empty? %>
+    <p class="text-sm text-secondary"><%= t("projects.summary.empty") %></p>
+    <% unless Current.user.guest? %>
+      <%= render DS::Link.new(text: t("projects.index.new"), variant: "outline", size: "sm", icon: "plus", href: new_project_path, frame: :modal) %>
+    <% end %>
+  <% end %>
+  <ul class="space-y-1">
+    <% projects.each do |project| %>
+      <% totals = project.totals(accounts: accounts) %>
+      <li>
+        <%= link_to project_path(project), class: "flex items-center gap-3 rounded-lg p-2 -mx-2 min-w-0 hover:bg-container-hover" do %>
+          <%= render DS::FilledIcon.new(icon: project.icon, hex_color: project.display_color, size: "sm") %>
+          <div class="min-w-0 flex-1 space-y-1">
+            <div class="flex items-baseline justify-between gap-2">
+              <p class="text-sm font-medium text-primary truncate"><%= project.name %></p>
+              <p class="text-sm text-primary tabular-nums whitespace-nowrap privacy-sensitive"><%= format_money(totals.spent) %></p>
+            </div>
+            <% if project.budget %>
+              <%= render "projects/budget_bar", project: project, totals: totals %>
+            <% else %>
+              <p class="text-xs text-secondary truncate"><%= project_subtitle(project) %></p>
+            <% end %>
+          </div>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+  <%= render DS::Link.new(text: t("projects.summary.view_all"), variant: "ghost", size: "sm", icon: "arrow-right", icon_position: :right, href: projects_path) %>
+</div>

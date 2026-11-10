@@ -1,4 +1,4 @@
-<%# locals: (iou:, accounts:, categories:) %>
+<%# locals: (iou:, accounts:, categories:, projects: []) %>
 <%= styled_form_with model: iou, class: "space-y-4" do |f| %>
   <% if iou.errors.any? %>
     <%= render "shared/form_errors", model: iou %>
@@ -24,6 +24,11 @@
           blank_label: t("ious.form.no_category"),
           locked: Current.family.categories_locked?
         ) %>
+    <% if projects.any? %>
+      <%= f.collection_select :project_id, projects, :id, :name,
+            { label: t("ious.form.project"), include_blank: t("ious.form.no_project") } %>
+    <% end %>
+    <%= hidden_field_tag :from_project, "1" if params[:from_project].present? %>
     <%= f.text_area :notes, label: t("ious.form.notes"), rows: 2 %>
   </section>
 
