@@ -136,4 +136,16 @@ class IousControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :not_found
   end
+
+  test "a member who can't see the account doesn't see its name" do
+    ious(:client_fee).record_payment(amount: 100, date: Date.current, account: accounts(:depository))
+    account_shares(:depository_shared_with_member).destroy!
+    sign_in users(:family_member)
+
+    get ious_url
+
+    assert_response :success
+    assert_select "##{dom_id(@iou)}", text: /Owed to you/
+    assert_select "##{dom_id(@iou)}", text: /Checking Account/, count: 0
+  end
 end

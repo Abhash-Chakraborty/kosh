@@ -90,10 +90,13 @@ class Iou < ApplicationRecord
     "#{person}: #{description}"
   end
 
-  # Returns the payment, saved or carrying its errors.
+  # Returns the payment, saved or carrying its errors. The row lock makes a
+  # second payment (a double click, a retry) wait and see the first, so the
+  # IOU can't be paid past its amount.
   def record_payment(amount:, date:, account: self.account)
     payment = IouPayment.new(iou: self, amount: amount, date: date, account: account)
-    payments.reset if payment.save
+    saved = with_lock { payment.save }
+    payments.reset if saved
     payment
   end
 

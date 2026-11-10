@@ -24,6 +24,8 @@ module Api
 
       STATUSES = %w[open settled].freeze
 
+      helper_method :accessible_account_ids
+
       before_action -> { authorize_scope!(:read) }, only: %i[index show]
       before_action -> { authorize_scope!(:write) }, only: %i[create update destroy create_payment]
       before_action :reject_guest_writes!, only: %i[create update destroy create_payment]
@@ -82,7 +84,7 @@ module Api
       end
 
       def create_payment
-        date = parse_date(params[:date])
+        date = parse_iso_date(params[:date])
         return render_validation_error("date must be a date like 2026-11-10") if date == :invalid
 
         account = payment_account
@@ -107,6 +109,12 @@ module Api
           current_resource_owner.family
         end
 
+        # IOUs are shared with the whole family, but an account's name and
+        # transactions only show to members who can see that account.
+        def accessible_account_ids
+          @accessible_account_ids ||= family.accounts.accessible_by(current_resource_owner).pluck(:id).to_set
+        end
+
         def set_iou
           @iou = family.ious.includes(:account, :category, payments: :entry).find_by(id: params[:id])
           render_json({ error: "not_found", message: "IOU not found" }, status: :not_found) unless @iou
@@ -118,7 +126,7 @@ module Api
           submitted = params.require(:iou)
           permitted = submitted.permit(:direction, :person, :description, :amount, :currency, :due_on, :notes)
 
-          if permitted[:due_on].present? && parse_date(permitted[:due_on]) == :invalid
+          if permitted[:due_on].present? && parse_iso_date(permitted[:due_on]) == :invalid
             return render_validation_error("due_on must be a date like 2026-11-15")
           end
 
@@ -151,12 +159,11 @@ module Api
           account
         end
 
-        def parse_date(value)
+        # nil when absent, :invalid when present but not YYYY-MM-DD.
+        def parse_iso_date(value)
           return nil if value.blank?
 
-          Date.iso8601(value.to_s)
-        rescue ArgumentError
-          :invalid
+          parse_date(value.to_s) || :invalid
         end
 
         def render_record_errors(record)

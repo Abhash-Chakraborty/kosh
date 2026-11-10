@@ -178,4 +178,23 @@ class Api::V1::IousControllerTest < ActionDispatch::IntegrationTest
     post payments_api_v1_iou_url(@iou), params: { amount: "10", date: "yesterday" }, headers: api_headers(@api_key), as: :json
     assert_response :unprocessable_entity
   end
+
+  test "an account the caller can't see is left out" do
+    @iou.record_payment(amount: 100, date: Date.current, account: @account)
+    account_shares(:depository_shared_with_member).destroy!
+    member = users(:family_member)
+    member.api_keys.active.destroy_all
+    key = ApiKey.create!(user: member, name: "Member Key", scopes: [ "read" ], source: "web", display_key: "test_m_#{SecureRandom.hex(8)}")
+    Redis.new.del("api_rate_limit:#{key.id}")
+
+    get api_v1_iou_url(@iou), headers: api_headers(key)
+
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert_nil body["account"]
+    assert_nil body["payments"].first["transaction_entry_id"]
+    assert_nil body["payments"].first["account_id"]
+    assert_equal "100.0", body["payments"].first["amount_decimal"]
+  end
 end
+

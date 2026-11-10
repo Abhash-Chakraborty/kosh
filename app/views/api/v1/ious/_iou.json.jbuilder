@@ -19,7 +19,7 @@ json.overdue iou.overdue?
 json.due_on iou.due_on&.iso8601
 json.notes iou.notes
 
-if iou.account
+if iou.account && accessible_account_ids.include?(iou.account_id)
   json.account do
     json.id iou.account.id
     json.name iou.account.name
@@ -37,13 +37,16 @@ else
   json.category nil
 end
 
+# The transaction and its account are left out (null) when the caller can't
+# see that account.
 json.payments iou.payments do |payment|
+  visible = accessible_account_ids.include?(payment.entry&.account_id)
   json.id payment.id
   json.amount payment.amount_money.format
   json.amount_decimal payment.amount.to_d.to_s("F")
   json.date payment.date.iso8601
-  json.transaction_entry_id payment.entry_id
-  json.account_id payment.entry&.account_id
+  json.transaction_entry_id(visible ? payment.entry_id : nil)
+  json.account_id(visible ? payment.entry.account_id : nil)
 end
 
 json.created_at iou.created_at.iso8601

@@ -1,12 +1,13 @@
 <%# locals: (iou:) %>
 <ul class="space-y-1" aria-label="<%= t("ious.payments.label", description: iou.description) %>">
   <% iou.payments.each do |payment| %>
+    <% account_visible = iou_account_visible?(payment.entry.account) %>
     <li id="<%= dom_id(payment) %>" class="flex items-center gap-2 text-xs text-secondary">
       <span class="min-w-0 flex-1 truncate">
-        <%= t("ious.payments.line", date: iou_short_date(payment.date), account: payment.entry.account.name) %>
+        <%= account_visible ? t("ious.payments.line", date: iou_short_date(payment.date), account: payment.entry.account.name) : iou_short_date(payment.date) %>
       </span>
       <span class="shrink-0 tabular-nums whitespace-nowrap privacy-sensitive"><%= format_money(payment.amount_money) %></span>
-      <% unless Current.user.guest? %>
+      <% if account_visible && !Current.user.guest? %>
         <%= render DS::Button.new(
               text: t("ious.payments.undo"),
               variant: "ghost",

@@ -19,8 +19,17 @@ module IousHelper
     iou.owed_to_me? ? t("ious.iou.owed_to_me") : t("ious.iou.i_owe")
   end
 
+  # IOUs are shared with the whole family; an account's name only shows to
+  # members who can see that account.
+  def iou_account_visible?(account)
+    return false if account.nil? || Current.user.nil?
+
+    @iou_accessible_account_ids ||= Current.user.accessible_accounts.pluck(:id).to_set
+    @iou_accessible_account_ids.include?(account.id)
+  end
+
   def iou_account_label(account, iou)
-    return if account.nil?
+    return unless iou_account_visible?(account)
 
     iou.owed_to_me? ? t("ious.iou.into_account", account: account.name) : t("ious.iou.from_account", account: account.name)
   end
