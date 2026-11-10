@@ -1,0 +1,18 @@
+client_fee:
+  family: dylan_family
+  direction: owed_to_me
+  person: Ravi
+  description: Website design
+  amount: 1500
+  currency: USD
+  due_on: <%= 10.days.from_now.to_date %>
+  account: depository
+  category: income
+
+dinner:
+  family: dylan_family
+  direction: i_owe
+  person: Maya
+  description: Dinner split
+  amount: 40
+  currency: USD

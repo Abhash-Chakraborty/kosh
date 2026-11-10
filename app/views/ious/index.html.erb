@@ -1,0 +1,59 @@
+<% content_for :page_header do %>
+  <div class="flex flex-wrap items-start justify-between gap-3 mb-6">
+    <div class="space-y-1 min-w-0">
+      <h1 class="text-xl lg:text-3xl font-medium text-primary"><%= t(".title") %></h1>
+      <p class="text-sm lg:text-base text-secondary"><%= t(".subtitle") %></p>
+    </div>
+    <% if (@open_groups.any? || @settled_ious.any?) && !Current.user.guest? %>
+      <%= render DS::Link.new(text: t(".new"), variant: "primary", href: new_iou_path, icon: "plus", frame: :modal) %>
+    <% end %>
+  </div>
+<% end %>
+
+<div class="@container space-y-6 pb-12 max-w-3xl">
+  <% if @open_groups.empty? && @settled_ious.empty? %>
+    <div class="bg-container rounded-xl shadow-border-xs">
+      <%= render DS::EmptyState.new(icon: "hand-coins", title: t(".empty")) do |empty| %>
+        <% unless Current.user.guest? %>
+          <% empty.with_action do %>
+            <%= render DS::Link.new(text: t(".new"), variant: "primary", href: new_iou_path, icon: "plus", frame: :modal) %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <section class="grid grid-cols-2 gap-3" aria-label="<%= t(".totals") %>">
+      <%= render DS::Card.new(class: "gap-1 p-4") do %>
+        <p class="text-xs text-secondary"><%= t(".owed_to_you_total") %></p>
+        <p class="text-lg @md:text-2xl font-medium text-primary tabular-nums privacy-sensitive"><%= format_money(@owed_to_you) %></p>
+      <% end %>
+      <%= render DS::Card.new(class: "gap-1 p-4") do %>
+        <p class="text-xs text-secondary"><%= t(".you_owe_total") %></p>
+        <p class="text-lg @md:text-2xl font-medium text-primary tabular-nums privacy-sensitive"><%= format_money(@you_owe) %></p>
+      <% end %>
+    </section>
+    <% if @unconverted_count.positive? %>
+      <p class="text-xs text-secondary -mt-3"><%= t(".unconverted", count: @unconverted_count) %></p>
+    <% end %>
+
+    <% if @open_groups.any? %>
+      <div class="rounded-xl bg-surface-inset space-y-1 p-1">
+        <% @open_groups.each do |ious| %>
+          <%= render DS::Section.new(title: ious.first.person, count: ious.size, inset: false) do %>
+            <% ious.each do |iou| %>
+              <%= render "ious/iou", iou: iou %>
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
+    <% else %>
+      <%= render DS::Card.new(class: "p-4") do %>
+        <p class="text-sm text-secondary"><%= t(".all_settled") %></p>
+      <% end %>
+    <% end %>
+
+    <% if @settled_ious.any? %>
+      <%= render "ious/settled", ious: @settled_ious %>
+    <% end %>
+  <% end %>
+</div>

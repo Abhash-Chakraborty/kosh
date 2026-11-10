@@ -1398,6 +1398,169 @@ components:
       type: array
       items:
         "$ref": "#/components/schemas/TagDetail"
+    IouPayment:
+      type: object
+      required:
+      - id
+      - amount
+      - amount_decimal
+      - date
+      - transaction_entry_id
+      properties:
+        id:
+          type: string
+          format: uuid
+        amount:
+          type: string
+          description: Formatted amount
+        amount_decimal:
+          type: string
+          description: Fixed-point amount, always positive
+        date:
+          type: string
+          format: date
+        transaction_entry_id:
+          type: string
+          format: uuid
+          description: Entry id of the transaction the payment created
+        account_id:
+          type: string
+          format: uuid
+          nullable: true
+    Iou:
+      type: object
+      required:
+      - id
+      - direction
+      - person
+      - description
+      - currency
+      - amount
+      - amount_decimal
+      - paid_decimal
+      - remaining
+      - remaining_decimal
+      - settled
+      - overdue
+      - payments
+      - created_at
+      - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        direction:
+          type: string
+          enum:
+          - owed_to_me
+          - i_owe
+        person:
+          type: string
+          description: Who owes, or is owed
+        description:
+          type: string
+          description: What the money is for
+        currency:
+          type: string
+        amount:
+          type: string
+          description: Formatted total amount
+        amount_decimal:
+          type: string
+        paid_decimal:
+          type: string
+        remaining:
+          type: string
+          description: Formatted amount still owed
+        remaining_decimal:
+          type: string
+        settled:
+          type: boolean
+        overdue:
+          type: boolean
+        due_on:
+          type: string
+          format: date
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        account:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+        category:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+        payments:
+          type: array
+          items:
+            "$ref": "#/components/schemas/IouPayment"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    IouRequest:
+      type: object
+      properties:
+        iou:
+          type: object
+          properties:
+            direction:
+              type: string
+              enum:
+              - owed_to_me
+              - i_owe
+            person:
+              type: string
+            description:
+              type: string
+            amount:
+              type: string
+              description: Greater than zero
+            currency:
+              type: string
+              description: Defaults to the family currency
+            due_on:
+              type: string
+              format: date
+            account_id:
+              type: string
+              format: uuid
+              description: Where the money lands (owed_to_me) or leaves from (i_owe)
+            category_id:
+              type: string
+              format: uuid
+              description: Category for the transaction a payment creates
+            notes:
+              type: string
+      required:
+      - iou
+    IouCollection:
+      type: object
+      required:
+      - ious
+      - pagination
+      properties:
+        ious:
+          type: array
+          items:
+            "$ref": "#/components/schemas/Iou"
+        pagination:
+          "$ref": "#/components/schemas/Pagination"
     RuleAction:
       type: object
       required:
@@ -8804,6 +8967,182 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/ErrorResponse"
+  "/api/v1/ious":
+    get:
+      summary: List IOUs
+      tags:
+      - IOUs
+      security:
+      - apiKeyAuth: []
+      parameters:
+      - name: direction
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - owed_to_me
+          - i_owe
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - open
+          - settled
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: IOUs listed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/IouCollection"
+        '422':
+          description: unknown filter value
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+    post:
+      summary: Create an IOU
+      tags:
+      - IOUs
+      security:
+      - apiKeyAuth: []
+      parameters: []
+      responses:
+        '201':
+          description: IOU created
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Iou"
+        '422':
+          description: validation error
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/IouRequest"
+        required: true
+  "/api/v1/ious/{id}":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      description: IOU ID
+      schema:
+        type: string
+    get:
+      summary: Retrieve an IOU
+      tags:
+      - IOUs
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          description: IOU retrieved
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Iou"
+        '404':
+          description: IOU not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+    patch:
+      summary: Update an IOU
+      tags:
+      - IOUs
+      security:
+      - apiKeyAuth: []
+      parameters: []
+      responses:
+        '200':
+          description: IOU updated
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Iou"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/IouRequest"
+        required: true
+    delete:
+      summary: Delete an IOU
+      tags:
+      - IOUs
+      security:
+      - apiKeyAuth: []
+      responses:
+        '204':
+          description: IOU deleted; transactions from its payments stay
+  "/api/v1/ious/{id}/payments":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      description: IOU ID
+      schema:
+        type: string
+    post:
+      summary: Record a payment
+      tags:
+      - IOUs
+      description: 'Creates a transaction in the account: income for owed_to_me,
+        an expense for i_owe. Returns the IOU with its payments.'
+      security:
+      - apiKeyAuth: []
+      parameters: []
+      responses:
+        '201':
+          description: payment recorded
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Iou"
+        '422':
+          description: no account, or more than what is left
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: string
+                  description: Defaults to what's left; can't be more than that
+                date:
+                  type: string
+                  format: date
+                  description: Defaults to today
+                account_id:
+                  type: string
+                  format: uuid
+                  description: Defaults to the IOU's account
   "/api/v1/merchants":
     get:
       summary: List merchants

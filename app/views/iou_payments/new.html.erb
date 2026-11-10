@@ -1,0 +1,41 @@
+<%= render DS::Dialog.new(width: "sm") do |dialog| %>
+  <% dialog.with_header(
+        title: t(".title"),
+        subtitle: t(".subtitle", person: @iou.person, description: @iou.description, remaining: format_money(@iou.remaining_amount_money))
+      ) %>
+  <% dialog.with_body do %>
+    <%= styled_form_with model: @payment, url: iou_payments_path(@iou), class: "space-y-4" do |f| %>
+      <% if @payment.errors.any? %>
+        <%= render "shared/form_errors", model: @payment %>
+      <% end %>
+
+      <section class="space-y-2">
+        <%= f.money_field :amount,
+              label: t(".amount"),
+              currency_value_override: @iou.currency,
+              hide_currency: true,
+              min: Money::Currency.new(@iou.currency).step,
+              max: @iou.remaining_amount.to_f,
+              required: true,
+              autofocus: true,
+              input_class: "privacy-sensitive privacy-sensitive-interactive" %>
+        <%= f.date_field :date, label: t(".date"), required: true, min: Entry.min_supported_date %>
+        <% if @accounts.any? %>
+          <%= f.collection_select :account_id, @accounts, :id, :name,
+                { label: @iou.owed_to_me? ? t(".account_in") : t(".account_out"), selected: @payment.account&.id, prompt: t(".choose_account"), variant: :logo, searchable: @accounts.size > 8 },
+                { required: true } %>
+        <% else %>
+          <p class="text-sm text-secondary"><%= t(".no_accounts") %></p>
+        <% end %>
+        <p class="text-xs text-secondary px-1">
+          <%= @iou.owed_to_me? ? t(".creates_income") : t(".creates_expense") %>
+        </p>
+      </section>
+
+      <div class="flex justify-end gap-2">
+        <%= render DS::Button.new(text: t(".cancel"), variant: :secondary, data: { action: "DS--dialog#close" }) %>
+        <%= render DS::Button.new(text: t(".submit"), type: :submit, disabled: @accounts.empty?) %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

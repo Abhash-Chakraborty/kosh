@@ -543,6 +543,10 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :ious, except: :show do
+    resources :payments, only: %i[new create destroy], controller: "iou_payments"
+  end
+
   resources :merchants, only: :show
 
   resources :family_merchants, only: %i[index new create edit update destroy] do
@@ -845,6 +849,9 @@ Rails.application.routes.draw do
       resources :security_prices, only: [ :index, :show, :create ]
       resources :tags, only: [ :index, :show, :create, :update, :destroy ]
       resources :payment_messages, only: [ :index, :create ]
+      resources :ious, only: [ :index, :show, :create, :update, :destroy ] do
+        post :payments, on: :member, action: :create_payment
+      end
 
       resources :transactions, only: [ :index, :show, :create, :update, :destroy ] do
         resource :split, only: [ :show, :create, :update, :destroy ]

@@ -1,0 +1,22 @@
+<%# locals: (ious:) %>
+<%= render DS::Disclosure.new(title: t("ious.settled.title", count: ious.size)) do %>
+  <div class="@container bg-container rounded-xl shadow-border-xs divide-y divide-subdued">
+    <% ious.each do |iou| %>
+      <div id="<%= dom_id(iou) %>" class="p-3 @lg:p-4 space-y-2">
+        <div class="flex items-center gap-3">
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-medium text-primary truncate"><%= t("ious.settled.name", person: iou.person, description: iou.description) %></p>
+            <p class="text-xs text-secondary truncate"><%= iou_direction_label(iou) %></p>
+          </div>
+          <p class="shrink-0 text-sm text-primary tabular-nums whitespace-nowrap privacy-sensitive"><%= format_money(iou.amount_money) %></p>
+          <% unless Current.user.guest? %>
+            <div class="shrink-0">
+              <%= render "ious/menu", iou: iou %>
+            </div>
+          <% end %>
+        </div>
+        <%= render "ious/payments", iou: iou %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

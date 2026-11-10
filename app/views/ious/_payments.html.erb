@@ -1,0 +1,27 @@
+<%# locals: (iou:) %>
+<ul class="space-y-1" aria-label="<%= t("ious.payments.label", description: iou.description) %>">
+  <% iou.payments.each do |payment| %>
+    <li id="<%= dom_id(payment) %>" class="flex items-center gap-2 text-xs text-secondary">
+      <span class="min-w-0 flex-1 truncate">
+        <%= t("ious.payments.line", date: iou_short_date(payment.date), account: payment.entry.account.name) %>
+      </span>
+      <span class="shrink-0 tabular-nums whitespace-nowrap privacy-sensitive"><%= format_money(payment.amount_money) %></span>
+      <% unless Current.user.guest? %>
+        <%= render DS::Button.new(
+              text: t("ious.payments.undo"),
+              variant: "ghost",
+              size: "sm",
+              href: iou_payment_path(iou, payment),
+              method: :delete,
+              aria_label: t("ious.payments.undo_label", date: iou_short_date(payment.date)),
+              confirm: CustomConfirm.new(
+                destructive: true,
+                title: t("ious.payments.undo_title"),
+                body: t("ious.payments.undo_body"),
+                btn_text: t("ious.payments.undo_confirm")
+              )
+            ) %>
+      <% end %>
+    </li>
+  <% end %>
+</ul>

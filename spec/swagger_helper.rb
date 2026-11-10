@@ -796,6 +796,85 @@ RSpec.configure do |config|
             type: :array,
             items: { '$ref' => '#/components/schemas/TagDetail' }
           },
+          IouPayment: {
+            type: :object,
+            required: %w[id amount amount_decimal date transaction_entry_id],
+            properties: {
+              id: { type: :string, format: :uuid },
+              amount: { type: :string, description: 'Formatted amount' },
+              amount_decimal: { type: :string, description: 'Fixed-point amount, always positive' },
+              date: { type: :string, format: :date },
+              transaction_entry_id: { type: :string, format: :uuid, description: 'Entry id of the transaction the payment created' },
+              account_id: { type: :string, format: :uuid, nullable: true }
+            }
+          },
+          Iou: {
+            type: :object,
+            required: %w[id direction person description currency amount amount_decimal paid_decimal remaining remaining_decimal settled overdue payments created_at updated_at],
+            properties: {
+              id: { type: :string, format: :uuid },
+              direction: { type: :string, enum: %w[owed_to_me i_owe] },
+              person: { type: :string, description: 'Who owes, or is owed' },
+              description: { type: :string, description: 'What the money is for' },
+              currency: { type: :string },
+              amount: { type: :string, description: 'Formatted total amount' },
+              amount_decimal: { type: :string },
+              paid_decimal: { type: :string },
+              remaining: { type: :string, description: 'Formatted amount still owed' },
+              remaining_decimal: { type: :string },
+              settled: { type: :boolean },
+              overdue: { type: :boolean },
+              due_on: { type: :string, format: :date, nullable: true },
+              notes: { type: :string, nullable: true },
+              account: {
+                type: :object,
+                nullable: true,
+                properties: {
+                  id: { type: :string, format: :uuid },
+                  name: { type: :string }
+                }
+              },
+              category: {
+                type: :object,
+                nullable: true,
+                properties: {
+                  id: { type: :string, format: :uuid },
+                  name: { type: :string }
+                }
+              },
+              payments: { type: :array, items: { '$ref' => '#/components/schemas/IouPayment' } },
+              created_at: { type: :string, format: :'date-time' },
+              updated_at: { type: :string, format: :'date-time' }
+            }
+          },
+          IouRequest: {
+            type: :object,
+            properties: {
+              iou: {
+                type: :object,
+                properties: {
+                  direction: { type: :string, enum: %w[owed_to_me i_owe] },
+                  person: { type: :string },
+                  description: { type: :string },
+                  amount: { type: :string, description: 'Greater than zero' },
+                  currency: { type: :string, description: 'Defaults to the family currency' },
+                  due_on: { type: :string, format: :date },
+                  account_id: { type: :string, format: :uuid, description: 'Where the money lands (owed_to_me) or leaves from (i_owe)' },
+                  category_id: { type: :string, format: :uuid, description: 'Category for the transaction a payment creates' },
+                  notes: { type: :string }
+                }
+              }
+            },
+            required: %w[iou]
+          },
+          IouCollection: {
+            type: :object,
+            required: %w[ious pagination],
+            properties: {
+              ious: { type: :array, items: { '$ref' => '#/components/schemas/Iou' } },
+              pagination: { '$ref' => '#/components/schemas/Pagination' }
+            }
+          },
           RuleAction: {
             type: :object,
             required: %w[id action_type created_at updated_at],

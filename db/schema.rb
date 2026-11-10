@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_03_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_10_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -1530,6 +1530,36 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_090000) do
     t.datetime "updated_at", null: false
     t.index ["token"], name: "index_invite_codes_on_token", unique: true
     t.index ["token_digest"], name: "index_invite_codes_on_token_digest", unique: true, where: "(token_digest IS NOT NULL)"
+  end
+
+  create_table "iou_payments", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.decimal "amount", precision: 19, scale: 4, null: false
+    t.datetime "created_at", null: false
+    t.date "date", null: false
+    t.uuid "entry_id", null: false
+    t.uuid "iou_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["entry_id"], name: "index_iou_payments_on_entry_id", unique: true
+    t.index ["iou_id"], name: "index_iou_payments_on_iou_id"
+  end
+
+  create_table "ious", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "account_id"
+    t.decimal "amount", precision: 19, scale: 4, null: false
+    t.uuid "category_id"
+    t.datetime "created_at", null: false
+    t.string "currency", null: false
+    t.string "description", null: false
+    t.string "direction", null: false
+    t.date "due_on"
+    t.uuid "family_id", null: false
+    t.text "notes"
+    t.string "person", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_ious_on_account_id"
+    t.index ["category_id"], name: "index_ious_on_category_id"
+    t.index ["family_id", "person"], name: "index_ious_on_family_id_and_person"
+    t.index ["family_id"], name: "index_ious_on_family_id"
   end
 
   create_table "kraken_accounts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -3225,6 +3255,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_090000) do
   add_foreign_key "insights", "families"
   add_foreign_key "invitations", "families"
   add_foreign_key "invitations", "users", column: "inviter_id"
+  add_foreign_key "iou_payments", "entries", on_delete: :cascade
+  add_foreign_key "iou_payments", "ious", on_delete: :cascade
+  add_foreign_key "ious", "accounts", on_delete: :nullify
+  add_foreign_key "ious", "categories", on_delete: :nullify
+  add_foreign_key "ious", "families"
   add_foreign_key "kraken_accounts", "kraken_items"
   add_foreign_key "kraken_items", "families"
   add_foreign_key "llm_usages", "families"

@@ -1,0 +1,34 @@
+<%# locals: (iou:, accounts:, categories:) %>
+<%= styled_form_with model: iou, class: "space-y-4" do |f| %>
+  <% if iou.errors.any? %>
+    <%= render "shared/form_errors", model: iou %>
+  <% end %>
+
+  <section class="space-y-2">
+    <%= f.select :direction, iou_direction_options, { label: t("ious.form.direction") } %>
+    <%= f.text_field :person, label: t("ious.form.person"), placeholder: t("ious.form.person_placeholder"), required: true, autofocus: iou.new_record?, maxlength: 255 %>
+    <%= f.text_field :description, label: t("ious.form.description"), placeholder: t("ious.form.description_placeholder"), required: true, maxlength: 255 %>
+    <%= f.money_field :amount,
+          label: t("ious.form.amount"),
+          required: true,
+          min: 0.01,
+          input_class: "privacy-sensitive privacy-sensitive-interactive" %>
+    <%= f.date_field :due_on, label: t("ious.form.due_on") %>
+    <%= f.collection_select :account_id, accounts, :id, :name,
+          { label: t("ious.form.account"), include_blank: t("ious.form.no_account"), variant: :logo, searchable: accounts.size > 8 } %>
+    <p class="text-xs text-secondary px-1"><%= t("ious.form.account_hint") %></p>
+    <%= render DS::CategorySelect.new(
+          form: f,
+          categories: categories,
+          selected_id: iou.category_id,
+          blank_label: t("ious.form.no_category"),
+          locked: Current.family.categories_locked?
+        ) %>
+    <%= f.text_area :notes, label: t("ious.form.notes"), rows: 2 %>
+  </section>
+
+  <div class="flex justify-end gap-2">
+    <%= render DS::Button.new(text: t("ious.form.cancel"), variant: :secondary, data: { action: "DS--dialog#close" }) %>
+    <%= render DS::Button.new(text: iou.new_record? ? t("ious.form.create") : t("ious.form.save"), type: :submit) %>
+  </div>
+<% end %>
