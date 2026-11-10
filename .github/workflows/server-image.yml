@@ -42,6 +42,19 @@ jobs:
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0
+
+      # Sure reads its version from .sure-version and shows 0.0.0-dev without it.
+      # Use the newest upstream release this build contains, so the version link
+      # and the "What's new" notes point at a real upstream release.
+      - name: Stamp the version
+        run: |
+          git fetch --quiet --no-tags https://github.com/we-promise/sure.git '+refs/tags/v2*:refs/tags/v2*'
+          tag=$(git describe --tags --abbrev=0 --match 'v2[0-9][0-9][0-9].*' HEAD 2>/dev/null || true)
+          version=${tag#v}
+          [[ -n "$version" ]] || version=$(date -u +%Y.%-m.%-d)
+          printf '%s\n' "$version" > .sure-version
+          echo "Version $version"
 
       - name: Set up Buildx
         uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
