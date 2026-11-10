@@ -68,6 +68,17 @@ en:
     settled:
       title: Settled · %{count}
       name: "%{person}: %{description}"
+    pending_flows:
+      owed_to_me:
+        everyone: Owed to you
+        people: "%{count} people owe you"
+        person: "%{person} owes you"
+        note: not received
+      i_owe:
+        everyone: You owe
+        people: You owe %{count} people
+        person: You owe %{person}
+        note: not paid
   iou_payments:
     new:
       title: Record payment

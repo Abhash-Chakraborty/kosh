@@ -326,111 +326,35 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :ok
   end
 
-  test "dashboard renders sankey chart with subcategories" do
-    # Create parent category with subcategory
-    parent_category = @family.categories.create!(name: "Shopping", color: "#FF5733")
-    subcategory = @family.categories.create!(name: "Groceries", parent: parent_category, color: "#33FF57")
-
-    # Create transactions using helper
-    create_transaction(account: @family.accounts.first, name: "General shopping", amount: 100, category: parent_category)
-    create_transaction(account: @family.accounts.first, name: "Grocery store", amount: 50, category: subcategory)
+  test "dashboard renders the cash flow chart for everyone, without the old chart or its opt-in" do
+    @user.update!(preferences: (@user.preferences || {}).merge("preview_features_enabled" => false))
 
     get root_path
+
     assert_response :ok
-    assert_select "[data-controller='sankey-chart']"
+    assert_select "[data-controller='sankey-chart']", count: 0
+    assert_select "input[name='preferences[cashflow_preview_enabled]']", count: 0
+    assert_select "section[data-section-key='cashflow_sankey'] #cashflow-preview [data-cash-flow-url-value*='/dashboard/cash_flow?']", count: 1
+    assert_select "#cashflow-preview [data-controller='preview-sankey-chart']", count: 2
+    assert_select "#cashflow-preview-expanded-dialog", count: 1
   end
 
-  test "dashboard renders sankey chart zoom controls and stable node ids" do
-    parent_category = @family.categories.create!(name: "Shopping", color: "#FF5733")
-    subcategory = @family.categories.create!(name: "Groceries", parent: parent_category, color: "#33FF57")
-
-    create_transaction(account: @family.accounts.first, name: "General shopping", amount: 100, category: parent_category)
-    create_transaction(account: @family.accounts.first, name: "Grocery store", amount: 50, category: subcategory)
-
-    get root_path
+  test "dashboard draws open IOUs on the cash flow chart" do
+    get root_path, params: { start_date: 1.month.ago.to_date.iso8601, end_date: Date.current.iso8601 }
 
     assert_response :ok
-    assert_select "[data-sankey-chart-target='zoomOutButton'][hidden]", count: 2
-
-    chart = css_select("[data-controller='sankey-chart']").first
-    sankey_data = JSON.parse(chart["data-sankey-chart-data-value"])
-
-    assert_includes sankey_data.fetch("nodes").map { |node| node.fetch("id") }, "cash_flow_node"
-    assert sankey_data.fetch("nodes").any? { |node| node.fetch("id").start_with?("expense_") }
+    flows = cash_flow_pending_flows
+    assert_equal [ "Ravi", "Maya" ], flows.map { |flow| flow.fetch("name") }
+    assert_equal [ "owed_to_me", "i_owe" ], flows.map { |flow| flow.fetch("direction") }
+    assert_equal [ 1500.0, 40.0 ], flows.map { |flow| flow.fetch("value") }
+    assert flows.all? { |flow| flow.fetch("url") == ious_path }
   end
 
-  test "dashboard sankey shows investment contributions as invested when they are not spending" do
-    @family.update!(investment_contributions_as_spending: false)
-    category = @family.categories.create!(name: "Shopping", color: "#FF5733")
-    income_category = @family.categories.create!(name: "Salary", color: "#33FF57")
-    create_transaction(account: @family.accounts.first, name: "Payday", amount: -1000, category: income_category)
-    create_transaction(account: @family.accounts.first, name: "Shopping trip", amount: 100, category: category)
-    create_transaction(account: @family.accounts.first, name: "To ISA", amount: 400, category: nil, kind: "investment_contribution")
+  test "dashboard leaves IOUs off a cash flow period that has ended" do
+    get root_path, params: { start_date: 2.months.ago.to_date.iso8601, end_date: 1.month.ago.to_date.iso8601 }
 
-    get root_path
     assert_response :ok
-
-    chart = css_select("[data-controller='sankey-chart']").first
-    nodes = JSON.parse(chart["data-sankey-chart-data-value"]).fetch("nodes").index_by { |node| node.fetch("id") }
-
-    assert_equal 400.0, nodes.fetch("invested_node").fetch("value")
-    assert_equal I18n.t("pages.dashboard.cashflow_preview.node_labels.invested"), nodes.fetch("invested_node").fetch("name")
-    assert nodes.keys.none? { |id| id.start_with?("expense_") && nodes[id].fetch("value") == 400.0 }
-  end
-
-  test "dashboard sankey balances a deficit when outflows exceed income" do
-    @family.update!(investment_contributions_as_spending: false)
-    category = @family.categories.create!(name: "Shopping", color: "#FF5733")
-    income_category = @family.categories.create!(name: "Salary", color: "#33FF57")
-    create_transaction(account: @family.accounts.first, name: "Payday", amount: -1000, category: income_category)
-    create_transaction(account: @family.accounts.first, name: "Shopping trip", amount: 700, category: category)
-    create_transaction(account: @family.accounts.first, name: "To ISA", amount: 500, category: nil, kind: "investment_contribution")
-
-    get root_path
-    assert_response :ok
-
-    data = JSON.parse(css_select("[data-controller='sankey-chart']").first["data-sankey-chart-data-value"])
-    nodes = data.fetch("nodes")
-    index = nodes.each_with_index.to_h { |node, i| [ node.fetch("id"), i ] }
-    links = data.fetch("links")
-    center = index.fetch("cash_flow_node")
-
-    assert_not index.key?("surplus_node")
-    deficit = nodes[index.fetch("deficit_node")]
-    assert_equal I18n.t("pages.dashboard.cashflow_preview.node_labels.deficit"), deficit.fetch("name")
-    inflow = links.select { |link| link.fetch("target") == center }.sum { |link| link.fetch("value") }
-    outflow = links.select { |link| link.fetch("source") == center }.sum { |link| link.fetch("value") }
-    assert_in_delta outflow, inflow, 0.01, "the Cash Flow node must balance"
-    assert links.any? { |link| link.fetch("source") == index.fetch("deficit_node") && link.fetch("target") == center },
-      "the deficit flows into Cash Flow"
-    assert_operator deficit.fetch("value"), :>=, 200.0, "at least the 200 by which this month's new outflows exceed the payday"
-    capacity = nodes[center].fetch("value")
-    assert_in_delta (500 / capacity * 100).round(1), nodes[index.fetch("invested_node")].fetch("percentage"), 0.05,
-      "invested is a share of the Cash Flow node, which outflows size when they exceed income"
-  end
-
-  test "dashboard sankey nodes carry a stable filter_value, including opposite-direction subcategories" do
-    parent_category = @family.categories.create!(name: "Shopping", color: "#FF5733")
-    subcategory = @family.categories.create!(name: "Rebate Program", parent: parent_category, color: "#33FF57")
-
-    # Parent nets as an expense; the subcategory nets as income (more refunded than spent),
-    # which routes it into the "opposite_subs" branch as its own standalone node.
-    create_transaction(account: @family.accounts.first, name: "Shopping trip", amount: 100, category: parent_category)
-    create_transaction(account: @family.accounts.first, name: "Rebate refund", amount: -30, category: subcategory)
-
-    get root_path
-    assert_response :ok
-
-    chart = css_select("[data-controller='sankey-chart']").first
-    sankey_data = JSON.parse(chart["data-sankey-chart-data-value"])
-    nodes = sankey_data.fetch("nodes")
-
-    opposite_node = nodes.find { |node| node.fetch("id").start_with?("income_sub_") }
-    assert_not_nil opposite_node, "expected an opposite-direction subcategory node"
-    assert_equal subcategory.name, opposite_node["filter_value"]
-
-    parent_node = nodes.find { |node| node.fetch("id") == "expense_#{parent_category.id}" }
-    assert_equal parent_category.name, parent_node["filter_value"]
+    assert_equal [], cash_flow_pending_flows
   end
 
   test "dashboard renders money flow widget" do
@@ -1228,43 +1152,6 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path(spending_month: selected_month.iso8601, customize: true, hidden_section: "spending_trend")
   end
 
-  test "dashboard hides the experimental Sankey comparison unless the user opts in" do
-    @user.update!(preferences: (@user.preferences || {}).merge("preview_features_enabled" => true))
-
-    get root_path
-
-    assert_response :ok
-    assert_select "section[data-section-key='cashflow_sankey']"
-    assert_select "#cashflow-preview", count: 0
-    assert_cashflow_preview_opt_in checked: false
-  end
-
-  test "dashboard renders the experimental Sankey comparison once the user opts in" do
-    @user.update!(preferences: (@user.preferences || {}).merge(
-      "preview_features_enabled" => true,
-      "cashflow_preview_enabled" => true
-    ))
-
-    get root_path
-
-    assert_response :ok
-    assert_select "#cashflow-preview"
-    assert_cashflow_preview_opt_in checked: true
-  end
-
-  test "dashboard hides the Sankey comparison opt-in without preview features" do
-    @user.update!(preferences: (@user.preferences || {}).merge(
-      "preview_features_enabled" => false,
-      "cashflow_preview_enabled" => true
-    ))
-
-    get root_path
-
-    assert_response :ok
-    assert_select "#cashflow-preview", count: 0
-    assert_select "input[name='preferences[cashflow_preview_enabled]']", count: 0
-  end
-
   test "update_preferences persists the Sankey comparison opt-in" do
     patch "/dashboard/preferences", params: { preferences: { cashflow_preview_enabled: true } }, as: :json
     assert_response :ok
@@ -1292,18 +1179,10 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   private
-    def assert_cashflow_preview_opt_in(checked:)
-      assert_select "form[action='#{dashboard_preferences_path}'][data-controller='auto-submit-form']" do
-        assert_select "label[for='cashflow_preview_enabled']", text: /#{Regexp.escape(I18n.t("pages.dashboard.cashflow_preview.opt_in_title"))}/
-        assert_select "input[type=checkbox][name='preferences[cashflow_preview_enabled]'][role=switch][data-auto-submit-form-target=auto]" do |inputs|
-          assert_equal 1, inputs.size
-          if checked
-            assert inputs.first["checked"].present?
-          else
-            assert_nil inputs.first["checked"]
-          end
-        end
-      end
+    def cash_flow_pending_flows
+      charts = css_select("#cashflow-preview [data-controller='preview-sankey-chart']")
+      assert_equal 1, charts.map { |chart| chart["data-preview-sankey-chart-pending-value"] }.uniq.size
+      JSON.parse(charts.first["data-preview-sankey-chart-pending-value"])
     end
 
     def money_flow_bars
