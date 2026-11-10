@@ -4,7 +4,21 @@ import { sankey, sankeyCenter } from "d3-sankey";
 import { formatCashFlowCurrency } from "utils/cash_flow_chart_data";
 import { CHART_TOOLTIP_CLASSES } from "utils/chart_tooltip";
 import { sankeyLabelOnRight } from "utils/sankey_align";
+import {
+  busiestColumn,
+  columnCount,
+  fitText,
+  fittedHeight,
+  fittedPadding,
+  fittedWidth,
+  labelRoom,
+} from "utils/sankey_fit";
 import { hiddenSankeyLabels } from "utils/sankey_labels";
+import {
+  drawPendingFlows,
+  layoutPendingFlows,
+  pendingReserve,
+} from "utils/sankey_pending";
 import { sankeyNodeHasChildren, zoomSankeyData } from "utils/sankey_zoom";
 import {
   buildCategoryTransactionsUrl,
@@ -25,6 +39,8 @@ export default class extends Controller {
     currency: { type: String, default: "USD" },
     startDate: String,
     endDate: String,
+    // Open IOUs, drawn apart from the graph (utils/sankey_pending).
+    pending: { type: Array, default: [] },
   };
 
   // Visual constants
@@ -32,7 +48,9 @@ export default class extends Controller {
   static HOVER_FILTER = "saturate(1.3) brightness(1.1)";
   static EXTENT_MARGIN = 16;
   static MIN_NODE_PADDING = 4;
-  static MAX_PADDING_RATIO = 0.4;
+  // Used while the chart's box has no height of its own (hidden, or sized
+  // by the chart itself).
+  static DEFAULT_HEIGHT = 344;
   static CORNER_RADIUS = 8;
   static ZOOM_TRANSITION_MS = 220;
   static DEFAULT_COLOR = "var(--color-gray-400)";
@@ -93,6 +111,10 @@ export default class extends Controller {
     this.zoomRootId = null;
     this.#syncZoomControls();
     this.#draw();
+  }
+
+  pendingValueChanged() {
+    if (this.connected) this.#draw();
   }
 
   disconnect() {
@@ -188,8 +210,32 @@ export default class extends Controller {
     const chartElement = this.#chartElement();
     const chart = d3.select(chartElement);
 
-    const width = chartElement.clientWidth || 600;
-    const height = chartElement.clientHeight || 400;
+    const margin = this.constructor.EXTENT_MARGIN;
+    const pending = this.zoomRootId ? [] : this.pendingValue;
+    const reserve = pendingReserve(pending);
+    const baseWidth = chartElement.clientWidth || 600;
+
+    // A first layout finds the columns; the chart is then sized so the
+    // busiest column's labels have room, growing taller (and, on a narrow
+    // screen, wider) than its box when they need it.
+    const draft = this.#generateSankeyData(
+      nodes,
+      links,
+      baseWidth,
+      this.constructor.DEFAULT_HEIGHT,
+      this.constructor.MIN_NODE_PADDING,
+    );
+    const busiest = busiestColumn(draft.nodes);
+    const width = fittedWidth(columnCount(draft.nodes), {
+      baseWidth,
+      margin,
+      nodeWidth: this.nodeWidthValue,
+    });
+    const height = fittedHeight(busiest, {
+      baseHeight: this.#baseHeight(),
+      margin,
+      reserve,
+    });
 
     const svg = chart
       .append("svg")
@@ -199,12 +245,16 @@ export default class extends Controller {
       .attr("data-sort-order", this.sortOrder)
       .style("opacity", animate ? 0 : 1);
 
-    const effectivePadding = this.#calculateNodePadding(nodes.length, height);
+    const effectivePadding = fittedPadding(busiest, {
+      height,
+      margin,
+      reserve,
+    });
     const sankeyData = this.#generateSankeyData(
       nodes,
       links,
       width,
-      height,
+      height - reserve,
       effectivePadding,
     );
 
@@ -215,9 +265,22 @@ export default class extends Controller {
       svg,
       sankeyData.nodes,
       width,
+      height,
     );
 
     this.#attachHoverEvents(linkPaths, nodeGroups, sankeyData, hiddenLabels);
+
+    drawPendingFlows(
+      svg,
+      layoutPendingFlows(sankeyData.nodes, pending, {
+        nodeWidth: this.nodeWidthValue,
+      }),
+      {
+        format: (value) => this.#formatCurrency(value),
+        fit: fitText,
+        onActivate: (flow) => Turbo.visit(flow.url),
+      },
+    );
 
     if (animate) {
       svg
@@ -229,6 +292,20 @@ export default class extends Controller {
 
   #chartElement() {
     return this.hasChartTarget ? this.chartTarget : this.element;
+  }
+
+  // The box's own height, without the drawing that may be stretching it.
+  #baseHeight() {
+    const chartElement = this.#chartElement();
+    const drawings = chartElement.querySelectorAll("svg");
+    drawings.forEach((svg) => {
+      svg.style.display = "none";
+    });
+    const height = chartElement.clientHeight;
+    drawings.forEach((svg) => {
+      svg.style.display = "";
+    });
+    return height || this.constructor.DEFAULT_HEIGHT;
   }
 
   #visibleData() {
@@ -290,20 +367,6 @@ export default class extends Controller {
         }),
       );
     }
-  }
-
-  // Dynamic padding prevents padding from dominating when there are many nodes
-  #calculateNodePadding(nodeCount, height) {
-    const margin = this.constructor.EXTENT_MARGIN;
-    const availableHeight = height - margin * 2;
-    const maxPaddingTotal =
-      availableHeight * this.constructor.MAX_PADDING_RATIO;
-    const gaps = Math.max(nodeCount - 1, 1);
-    const dynamicPadding = Math.min(
-      this.nodePaddingValue,
-      Math.floor(maxPaddingTotal / gaps),
-    );
-    return Math.max(this.constructor.MIN_NODE_PADDING, dynamicPadding);
   }
 
   #generateSankeyData(nodes, links, width, height, nodePadding) {
@@ -397,7 +460,7 @@ export default class extends Controller {
       .style("transition", "opacity 0.3s ease");
   }
 
-  #drawNodes(svg, nodes, width) {
+  #drawNodes(svg, nodes, width, height) {
     const nodeGroups = svg
       .append("g")
       .selectAll("g")
@@ -416,6 +479,7 @@ export default class extends Controller {
       nodeGroups,
       sankeyLabelOnRight(nodes, width),
       nodes,
+      { width, height },
     );
 
     return { nodeGroups, hiddenLabels };
@@ -473,11 +537,12 @@ export default class extends Controller {
             L ${x0},${y1} Z`;
   }
 
-  #addNodeLabels(svg, nodeGroups, labelOnRight, nodes) {
+  #addNodeLabels(svg, nodeGroups, labelOnRight, nodes, { width, height }) {
     const controller = this;
     const hiddenLabels = this.#calculateHiddenLabels(
       nodes,
-      this.#measureLabels(svg, nodes, labelOnRight),
+      this.#measureLabels(svg, nodes, labelOnRight, width),
+      height,
     );
 
     nodeGroups
@@ -513,27 +578,41 @@ export default class extends Controller {
       .attr("text-anchor", right ? "start" : "end");
 
     textEl.selectAll("tspan").remove();
-    textEl.append("tspan").text(d.name);
+    textEl.append("tspan").text(d.labelName ?? d.name);
     textEl
       .append("tspan")
       .attr("x", x)
       .attr("dy", "1.2em")
       .attr("class", "font-mono text-secondary")
-      .style("font-size", "0.65rem")
+      .style("font-size", "0.7rem")
       .text(this.#formatCurrency(d.value));
   }
 
   // Where each label lands at this width, measured with an invisible probe
   // before the real labels are drawn, so the overlap rule can see a label
-  // that reaches into the next column.
-  #measureLabels(svg, nodes, labelOnRight) {
+  // that reaches into the next column. A name too long for the gap to the
+  // next column is cut short (the tooltip and aria-label keep it whole).
+  #measureLabels(svg, nodes, labelOnRight, width) {
     const probe = svg
       .append("text")
       .attr("class", "text-xs font-medium select-none")
       .style("visibility", "hidden");
+    const columns = [...new Set(nodes.map((d) => Math.round(d.x0)))].sort(
+      (a, b) => a - b,
+    );
 
     const boxes = new Map();
     nodes.forEach((d) => {
+      this.#writeLabel(probe, d, labelOnRight);
+      const name = probe.select("tspan").node();
+      d.labelName = fitText(
+        d.name,
+        labelRoom(d, labelOnRight(d), { columns, width }),
+        (text) => {
+          name.textContent = text;
+          return name.getComputedTextLength();
+        },
+      );
       this.#writeLabel(probe, d, labelOnRight);
       const { x, y, width: boxWidth, height } = probe.node().getBBox();
       boxes.set(d.index, { x, y, width: boxWidth, height });
@@ -543,14 +622,18 @@ export default class extends Controller {
     return boxes;
   }
 
-  // Calculate which labels should be hidden to prevent overlap
-  #calculateHiddenLabels(nodes, labelBoxes) {
-    const height = this.#chartElement().clientHeight || 400;
-    return hiddenSankeyLabels(nodes, {
+  // Calculate which labels should be hidden to prevent overlap, and those
+  // without room for even a few letters of their name.
+  #calculateHiddenLabels(nodes, labelBoxes, height) {
+    const hidden = hiddenSankeyLabels(nodes, {
       height,
       minSpacing: this.constructor.MIN_LABEL_SPACING,
       labelBoxes,
     });
+    nodes.forEach((d) => {
+      if (!d.labelName) hidden.add(d.index);
+    });
+    return hidden;
   }
 
   #attachHoverEvents(linkPaths, nodeGroups, sankeyData, hiddenLabels) {

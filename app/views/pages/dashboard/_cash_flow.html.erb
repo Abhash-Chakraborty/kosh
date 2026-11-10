@@ -1,0 +1,64 @@
+<%# locals: (period:) %>
+<%# Home's cash flow chart. The graph is fetched from CashFlowsController;
+    open IOUs are drawn on it as flows that haven't happened yet. The section
+    header's expand button opens the dialog below (cashflow-expand). %>
+<% pending = iou_pending_flows(period) %>
+<div id="cashflow-preview" class="ph-no-capture"
+  data-controller="cash-flow-card"
+  data-action="cash-flow:state->cash-flow-card#update turbo:before-cache@document->cash-flow-card#close">
+  <%# A morph refresh (the sync toast's) puts the server markup back inside,
+      loading state and all, with the controllers still connected, so the
+      graph is fetched again. %>
+  <div data-controller="cash-flow" class="space-y-2"
+    data-action="turbo:before-cache@document->cash-flow#clear turbo:morph@document->cash-flow#load"
+    data-cash-flow-url-value="<%= dashboard_cash_flow_path(start_date: period.start_date.iso8601, end_date: period.end_date.iso8601) %>"
+    data-cash-flow-group-by-value="<%= Current.user.cashflow_sankey_group_by %>">
+    <%# Outside the loading and content states, so the grouping can be switched back from an empty graph. %>
+    <div class="px-4 flex flex-wrap items-center justify-end gap-2">
+      <span class="text-xs text-secondary"><%= t("pages.dashboard.cashflow_preview.group_by_label") %></span>
+      <%= render DS::SegmentedControl.new(aria_label: t("pages.dashboard.cashflow_preview.group_by_label")) do |sc| %>
+        <% User::CASHFLOW_SANKEY_GROUPINGS.each do |group_by| %>
+          <% sc.with_segment(
+               t("pages.dashboard.cashflow_preview.group_by_#{group_by}"),
+               active: Current.user.cashflow_sankey_group_by == group_by,
+               class: "text-xs",
+               data: { cash_flow_target: "groupBySegment", group_by: group_by, action: "cash-flow#groupBy" }
+             ) %>
+        <% end %>
+      <% end %>
+    </div>
+    <p data-cash-flow-target="loading" role="status" class="p-4 text-secondary"><%= t("pages.dashboard.cashflow_sankey.loading") %></p>
+    <div data-cash-flow-target="error" hidden role="alert" class="p-4 space-y-3">
+      <p><%= t("pages.dashboard.cashflow_sankey.load_error") %></p>
+      <%= render DS::Button.new(text: t("pages.dashboard.cashflow_sankey.retry"), data: { action: "cash-flow#load" }) %>
+    </div>
+    <%# The chart grows taller with the number of categories, so this box has
+        a floor rather than a fixed height. Narrow screens scroll it sideways
+        when the columns need more room than the screen has. %>
+    <div data-cash-flow-target="content" hidden>
+      <div class="w-full min-h-96 overflow-x-auto overscroll-x-contain" tabindex="0" role="region" aria-label="<%= t("pages.dashboard.cashflow_sankey.title") %>">
+        <%= render "pages/dashboard/cashflow_preview_chart", period: period, pending: pending %>
+      </div>
+    </div>
+    <div data-cash-flow-target="empty" hidden class="h-72 flex flex-col items-center justify-center gap-3 p-4 text-center">
+      <%= render DS::FilledIcon.new(variant: :container, icon: "activity") %>
+      <p class="text-sm font-medium text-primary"><%= t("pages.dashboard.cashflow_sankey.no_data_title") %></p>
+      <p class="text-sm text-secondary"><%= t("pages.dashboard.cashflow_sankey.no_data_description") %></p>
+      <%= render DS::Link.new(
+        text: t("pages.dashboard.cashflow_sankey.add_transaction"),
+        icon: "plus",
+        href: new_transaction_path,
+        frame: :modal
+      ) %>
+    </div>
+    <%= render DS::Dialog.new(id: "cashflow-preview-expanded-dialog", auto_open: false, width: "expanded", disable_frame: true,
+      data: { cash_flow_card_target: "dialog", action: "close->cashflow-expand#restore" }) do |dialog| %>
+      <% dialog.with_header(title: t("pages.dashboard.cashflow_sankey.title")) %>
+      <% dialog.with_body do %>
+        <div class="w-full h-[85dvh] max-h-[90dvh] overflow-auto overscroll-contain" tabindex="0" role="region" aria-label="<%= t("pages.dashboard.cashflow_sankey.title") %>">
+          <%= render "pages/dashboard/cashflow_preview_chart", period: period, pending: pending %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+</div>

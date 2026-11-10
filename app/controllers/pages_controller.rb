@@ -171,9 +171,9 @@ class PagesController < ApplicationController
           {
             key: "cashflow_sankey",
             title: "pages.dashboard.cashflow_sankey.title",
-            partial: "pages/dashboard/cashflow_sankey",
+            partial: "pages/dashboard/cash_flow",
             layout: section_layout("cashflow_sankey"),
-            locals: { sankey_data: cashflow_sankey_data, period: @period },
+            locals: { period: @period },
             visible: @accounts.any?,
             collapsible: true
           }

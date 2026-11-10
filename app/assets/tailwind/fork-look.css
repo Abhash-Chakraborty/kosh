@@ -1,0 +1,34 @@
+/*
+ * Graphite: this fork's dark theme.
+ *
+ * Only token values change, so every screen (including new ones merged from
+ * upstream) follows without touching upstream views or the generated design
+ * system. Light mode is left as upstream ships it.
+ *
+ * `:root[data-theme="dark"]` outranks the generated `[data-theme="dark"]`
+ * block, so these win regardless of source order.
+ */
+@layer base {
+  :root[data-theme="dark"] {
+    /* Warm graphite neutrals, same roles as the upstream ramp in dark mode:
+       black = page, 900 = cards, 800 = hover/inset, 300-400 = muted text. */
+    --color-black: #151615;
+    --color-gray-900: #1d1e1d;
+    --color-gray-800: #262826;
+    --color-gray-700: #343734;
+    --color-gray-600: #4a4d4a;
+    --color-gray-500: #6e716d;
+    --color-gray-400: #969993;
+    --color-gray-300: #c3c5bf;
+    --color-gray-200: #dcddd8;
+    --color-gray-100: #e8e8e4;
+    --color-gray-50: #f1f1ee;
+    --color-gray-25: #f7f7f5;
+
+    /* Off-white instead of pure white for text and primary buttons. */
+    --color-white: #f4f4f1;
+
+    /* One accent: mint for positive amounts, toggles and success states. */
+    --color-success: #8fd9b6;
+  }
+}
