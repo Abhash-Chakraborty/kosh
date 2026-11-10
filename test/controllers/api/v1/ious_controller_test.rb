@@ -197,4 +197,3 @@ class Api::V1::IousControllerTest < ActionDispatch::IntegrationTest
     assert_equal "100.0", body["payments"].first["amount_decimal"]
   end
 end
-
