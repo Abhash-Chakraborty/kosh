@@ -23,7 +23,7 @@ class TransactionProjectsController < ApplicationController
       format.html { redirect_back_or_to transaction_path(@entry), status: :see_other }
       format.turbo_stream do
         render turbo_stream: turbo_stream.replace(
-          dom_id(@entry, :project),
+          helpers.dom_id(@entry, :project),
           partial: "projects/transaction_project",
           locals: { entry: @entry, can_annotate: true }
         )
