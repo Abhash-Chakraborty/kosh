@@ -8,7 +8,9 @@
           <span class="size-2 rounded-full shrink-0" style="background-color: <%= row.color %>" aria-hidden="true"></span>
         <% end %>
         <span class="text-secondary truncate flex-1" title="<%= row.name || fallback_name %>"><%= row.name || fallback_name %></span>
-        <span class="text-primary tabular-nums whitespace-nowrap privacy-sensitive"><%= format_money(row.spent) %></span>
+        <% if row.spent.positive? || !row.received.positive? %>
+          <span class="text-primary tabular-nums whitespace-nowrap privacy-sensitive"><%= format_money(row.spent) %></span>
+        <% end %>
         <% if row.received.positive? %>
           <span class="text-success tabular-nums whitespace-nowrap privacy-sensitive">+<%= format_money(row.received) %></span>
         <% end %>

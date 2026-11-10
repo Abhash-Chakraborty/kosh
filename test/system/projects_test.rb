@@ -36,6 +36,8 @@ class ProjectsTest < ApplicationSystemTestCase
     JS
 
     within "turbo-frame#drawer", visible: :all do
+      # It sits with merchant and tags, under Details.
+      find("summary", text: /\A\s*details\s*\z/i).click
       select "Garden", from: "Project"
       assert_selector "##{ActionView::RecordIdentifier.dom_id(entry, :project)} option[selected]", text: "Garden", visible: :all
     end
@@ -59,7 +61,7 @@ class ProjectsTest < ApplicationSystemTestCase
     page.save_screenshot(Rails.root.join("tmp/screenshots/projects-show-phone.png"))
 
     visit_and_check(root_url, "Home")
-    find("section[data-section-key='projects']").scroll_to(:center)
+    page.execute_script("document.querySelector(\"section[data-section-key='projects']\").scrollIntoView({ block: 'center' })")
     page.save_screenshot(Rails.root.join("tmp/screenshots/projects-home-phone.png"))
   end
 
