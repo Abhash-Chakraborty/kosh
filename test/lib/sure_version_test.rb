@@ -32,4 +32,13 @@ class SureVersionTest < ActiveSupport::TestCase
     assert_equal "v2026.10.28", Sure.version.to_release_tag
     assert_not Sure.version.prerelease?
   end
+
+  test "commit links use upstream unless a fork names its own repository" do
+    ClimateControl.modify(SOURCE_REPOSITORY_URL: nil) do
+      assert_equal "https://github.com/we-promise/sure", Sure.source_repository_url
+    end
+    ClimateControl.modify(SOURCE_REPOSITORY_URL: "https://github.com/example/sure") do
+      assert_equal "https://github.com/example/sure", Sure.source_repository_url
+    end
+  end
 end

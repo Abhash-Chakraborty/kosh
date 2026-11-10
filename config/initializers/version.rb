@@ -4,6 +4,12 @@ module Sure
       Calver.new(version_string)
     end
 
+    # Where this build's commits live. A fork sets SOURCE_REPOSITORY_URL so the
+    # commit link in the user menu opens its own repository, not upstream's.
+    def source_repository_url
+      ENV["SOURCE_REPOSITORY_URL"].presence || "https://github.com/we-promise/sure"
+    end
+
     def commit_sha
       if Rails.env.production?
         ENV["BUILD_COMMIT_SHA"]
