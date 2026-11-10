@@ -1,0 +1,90 @@
+---
+en:
+  ious:
+    index:
+      title: Money owed
+      subtitle: Who owes you, and who you owe. A payment becomes a transaction when the money moves.
+      new: Add IOU
+      empty: Nothing is owed either way.
+      totals: Totals
+      owed_to_you_total: People owe you
+      you_owe_total: You owe
+      unconverted:
+        one: One amount in another currency has no exchange rate, so it isn't in these totals.
+        other: "%{count} amounts in other currencies have no exchange rate, so they aren't in these totals."
+      all_settled: Everything is settled.
+    new:
+      title: New IOU
+    edit:
+      title: Edit IOU
+    create:
+      success: IOU added
+    update:
+      success: IOU saved
+    destroy:
+      success: IOU deleted
+    iou:
+      due: Due %{date}
+      overdue: Overdue since %{date}
+      owed_to_me: Owed to you
+      i_owe: You owe
+      into_account: Into %{account}
+      from_account: From %{account}
+      of_total: of %{amount}
+      record_payment: Record payment
+      record_payment_for: Record payment for %{description}
+      edit: Edit
+      delete: Delete
+      delete_title: Delete this IOU?
+      delete_body: It can't be brought back.
+      delete_body_with_payments: It can't be brought back. Payments already recorded stay as transactions.
+    form:
+      direction: Direction
+      directions:
+        owed_to_me: Someone owes me
+        i_owe: I owe someone
+      person: Who
+      person_placeholder: Name
+      description: What for
+      description_placeholder: Concert tickets
+      amount: Amount
+      due_on: Due date
+      account: Account
+      no_account: Decide later
+      account_hint: Where the money lands, or leaves from, when it's paid.
+      no_category: No category
+      notes: Notes
+      cancel: Cancel
+      create: Add
+      save: Save
+    payments:
+      label: Payments for %{description}
+      line: "%{date} · %{account}"
+      undo: Undo
+      undo_label: Undo the payment from %{date}
+      undo_title: Undo this payment?
+      undo_body: Its transaction is deleted too.
+      undo_confirm: Undo payment
+    settled:
+      title: Settled · %{count}
+      name: "%{person}: %{description}"
+  iou_payments:
+    new:
+      title: Record payment
+      subtitle: "%{person}, %{description}. %{remaining} left."
+      amount: Amount
+      date: Date
+      account_in: Paid into
+      account_out: Paid from
+      choose_account: Choose an account
+      no_accounts: You need an account you can add transactions to.
+      creates_income: This adds an income transaction to the account.
+      creates_expense: This adds an expense transaction to the account.
+      cancel: Cancel
+      submit: Record payment
+    create:
+      success: Payment recorded
+      settled: Payment recorded. This IOU is settled.
+    destroy:
+      success: Payment undone and its transaction deleted
+      not_allowed: You can't change transactions in that account.

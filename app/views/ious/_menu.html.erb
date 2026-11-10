@@ -1,0 +1,20 @@
+<%# locals: (iou:) %>
+<%= render DS::Menu.new do |menu| %>
+  <% unless iou.settled? %>
+    <% menu.with_item(variant: "link", text: t("ious.iou.record_payment"), href: new_iou_payment_path(iou), icon: "hand-coins", frame: :modal) %>
+  <% end %>
+  <% menu.with_item(variant: "link", text: t("ious.iou.edit"), href: edit_iou_path(iou), icon: "pencil", frame: :modal) %>
+  <% menu.with_item(
+        variant: "button",
+        text: t("ious.iou.delete"),
+        href: iou_path(iou),
+        icon: "trash-2",
+        method: :delete,
+        confirm: CustomConfirm.new(
+          destructive: true,
+          title: t("ious.iou.delete_title"),
+          body: iou.payments.any? ? t("ious.iou.delete_body_with_payments") : t("ious.iou.delete_body"),
+          btn_text: t("ious.iou.delete")
+        )
+      ) %>
+<% end %>

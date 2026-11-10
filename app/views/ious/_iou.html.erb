@@ -1,0 +1,48 @@
+<%# locals: (iou:) %>
+<% details = [ iou_direction_label(iou), iou_account_label(iou.account, iou) ].compact %>
+
+<div id="<%= dom_id(iou) %>" class="p-3 @lg:p-4 space-y-2">
+  <div class="flex items-center gap-3">
+    <div class="min-w-0 flex-1">
+      <p class="text-sm font-medium text-primary truncate"><%= iou.description %></p>
+      <p class="text-xs text-secondary truncate">
+        <% if iou.due_on %>
+          <span class="<%= "text-destructive font-medium" if iou.overdue? %>"><%= iou_due_label(iou) %></span>
+          <span aria-hidden="true">&middot;</span>
+        <% end %>
+        <%= details.join(" · ") %>
+      </p>
+      <% if iou.notes.present? %>
+        <p class="text-xs text-secondary truncate"><%= iou.notes %></p>
+      <% end %>
+    </div>
+
+    <div class="shrink-0 text-right">
+      <p class="text-sm font-medium text-primary tabular-nums whitespace-nowrap privacy-sensitive"><%= format_money(iou.remaining_amount_money) %></p>
+      <% if iou.partly_paid? %>
+        <p class="text-xs text-secondary tabular-nums whitespace-nowrap privacy-sensitive"><%= t("ious.iou.of_total", amount: format_money(iou.amount_money)) %></p>
+      <% end %>
+    </div>
+
+    <% unless Current.user.guest? %>
+      <div class="hidden @lg:block shrink-0">
+        <%= render DS::Link.new(
+              text: t("ious.iou.record_payment"),
+              variant: "outline",
+              size: "sm",
+              href: new_iou_payment_path(iou),
+              frame: :modal,
+              aria: { label: t("ious.iou.record_payment_for", description: iou.description) }
+            ) %>
+      </div>
+
+      <div class="shrink-0">
+        <%= render "ious/menu", iou: iou %>
+      </div>
+    <% end %>
+  </div>
+
+  <% if iou.payments.any? %>
+    <%= render "ious/payments", iou: iou %>
+  <% end %>
+</div>

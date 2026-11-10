@@ -1,0 +1,35 @@
+---
+en:
+  activerecord:
+    models:
+      iou: IOU
+      iou_payment: Payment
+    attributes:
+      iou:
+        account: Account
+        amount: Amount
+        category: Category
+        currency: Currency
+        description: What for
+        direction: Direction
+        due_on: Due date
+        notes: Notes
+        person: Who
+      iou_payment:
+        account: Account
+        amount: Amount
+        date: Date
+    errors:
+      models:
+        iou:
+          attributes:
+            amount:
+              less_than_paid: can't be less than what has already been paid
+            currency:
+              locked_by_payments: can't change once a payment is recorded
+            direction:
+              locked_by_payments: can't change once a payment is recorded
+        iou_payment:
+          attributes:
+            amount:
+              more_than_remaining: is more than what's left to pay
