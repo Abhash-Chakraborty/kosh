@@ -167,9 +167,10 @@ jobs:
           bin/rails test "${files[@]}"
 
       # Same rerun as upstream's ci.yml: tests that check encryption_ready?
-      # skip without keys, so they run once more with throwaway ones.
+      # skip without keys, so they run once more with throwaway ones, in the
+      # half that finishes first.
       - name: Encryption tests
-        if: ${{ !cancelled() && matrix.half == 1 }}
+        if: ${{ !cancelled() && matrix.half == 2 }}
         env:
           ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY: test
           ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY: test
