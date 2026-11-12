@@ -29,6 +29,22 @@ en:
       label: "%{percent}% of budget spent"
       left: "%{amount} left"
       over: "%{amount} over"
+    cost_sheet:
+      title: Cost sheet
+      hint: Every amount once, whether paid, still to pay or still to come back.
+      kinds:
+        paid: Paid
+        received: Received
+        to_pay: To pay %{person}
+        to_receive: To come from %{person}
+      paid: Paid so far
+      received: Received so far
+      to_pay: Still to pay
+      to_receive: Still to come back
+      net_cost: Final cost to you
+      net_gain: You come out ahead by
+      left_to_pay: Left to pay from your pocket
+      left_to_receive: Left to come to you
     entry:
       not_counted: Not counted
     show:

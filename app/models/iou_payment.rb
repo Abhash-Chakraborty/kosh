@@ -28,6 +28,7 @@ class IouPayment < ApplicationRecord
   validate :entry_valid, on: :create
 
   after_create :lock_entry_attributes
+  after_create :add_entry_to_project
   after_destroy :destroy_entry
   after_commit :sync_entry_account, on: %i[create destroy]
 
@@ -72,6 +73,12 @@ class IouPayment < ApplicationRecord
 
     def lock_entry_attributes
       entry.lock_saved_attributes!
+    end
+
+    # A payment on a project's IOU is part of what the project cost or
+    # brought in, so its transaction joins the project.
+    def add_entry_to_project
+      iou.project&.assign_transactions!([ entry.entryable_id ])
     end
 
     def destroy_entry

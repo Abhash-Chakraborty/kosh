@@ -47,6 +47,19 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
     assert_select "[role=progressbar]"
   end
 
+  test "shows the cost sheet with open IOUs and the final cost" do
+    ious(:dinner).update!(project: projects(:lisbon), category: categories(:food_and_drink))
+
+    get project_url(projects(:lisbon))
+
+    assert_response :success
+    assert_select "h2", text: "Cost sheet"
+    assert_select "[data-cost-group] p", text: "To pay Maya"
+    assert_select "dt", text: "Still to pay"
+    assert_select "dt", text: "Final cost to you"
+    assert_select "dt", text: "Left to pay from your pocket"
+  end
+
   test "the account filter narrows the project page" do
     get project_url(@project, account_id: accounts(:connected).id)
 

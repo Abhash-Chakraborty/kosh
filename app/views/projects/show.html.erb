@@ -56,6 +56,10 @@
     <% end %>
   <% end %>
 
+  <% if @cost_sheet.any? %>
+    <%= render "projects/cost_sheet", sheet: @cost_sheet %>
+  <% end %>
+
   <% if @totals.transaction_count.positive? %>
     <div class="grid grid-cols-1 @2xl:grid-cols-2 gap-3">
       <%= render "projects/breakdown", title: t(".by_category"), rows: @totals.by_category, fallback_name: t(".uncategorized") %>

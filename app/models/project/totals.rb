@@ -64,6 +64,19 @@ class Project::Totals
   def owed_to_you = open_iou_total("owed_to_me")
   def you_owe = open_iou_total("i_owe")
 
+  # This project's open IOUs on the given accounts, or on no account.
+  def open_ious
+    @open_ious ||= begin
+      ious = @project.ious.outstanding.includes(:payments, :category)
+      ious.where(account_id: nil).or(ious.where(account_id: @accounts.select(:id))).by_due_date.to_a
+    end
+  end
+
+  # [ entry, amount in the project's currency ] for every counted entry.
+  def entry_amounts
+    converted
+  end
+
   def by_category
     rows do |entry|
       category = entry.entryable.category
@@ -111,9 +124,7 @@ class Project::Totals
     end
 
     def open_iou_total(direction)
-      ious = @project.ious.outstanding.where(direction: direction).includes(:payments)
-      ious = ious.where(account_id: nil).or(ious.where(account_id: @accounts.select(:id)))
-      total, _skipped = Iou.remaining_total(ious.to_a, currency: @currency)
+      total, _skipped = Iou.remaining_total(open_ious.select { |iou| iou.direction == direction }, currency: @currency)
       total
     end
 end

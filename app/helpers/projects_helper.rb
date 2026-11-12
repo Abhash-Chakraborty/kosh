@@ -32,6 +32,18 @@ module ProjectsHelper
     [ totals.budget_used_percent.to_i, 100 ].min
   end
 
+  # "Paid · 12 Nov" or "To pay Saksham · 28 Nov", under a cost sheet line.
+  def project_cost_line_detail(line)
+    label = t("projects.cost_sheet.kinds.#{line.kind}", person: line.person)
+    [ label, (iou_short_date(line.date) if line.date) ].compact.join(" · ")
+  end
+
+  # Money coming in carries a plus sign.
+  def project_cost_line_amount(sheet, line)
+    amount = format_money(sheet.money(line.amount))
+    line.incoming? ? "+#{amount}" : amount
+  end
+
   def project_account_options(accounts)
     accounts.map { |account| [ account.name, account.id ] }
   end
