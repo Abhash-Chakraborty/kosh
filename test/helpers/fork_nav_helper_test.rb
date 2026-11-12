@@ -18,7 +18,7 @@ class ForkNavHelperTest < ActionView::TestCase
   test "FORK_HIDE_NAV leaves pages out by the first part of their path" do
     items = [ { name: "Home", path: "/" }, { name: "Bills", path: "/bills" }, { name: "Portfolio", path: "/portfolio/holdings?tab=all" } ]
 
-    ClimateControl.modify(FORK_HIDE_NAV: "bills, Portfolio ,owed") do
+    ClimateControl.modify(FORK_HIDE_NAV: "bills, Portfolio ,ious") do
       names = with_fork_nav_items(items).map { |item| item[:name] }
       assert_equal [ "Home", I18n.t("layouts.application.nav.projects") ], names
     end
