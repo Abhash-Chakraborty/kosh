@@ -1,0 +1,253 @@
+name: Fork PR checks
+
+# This fork's own, shorter checks for a pull request. Upstream's "Pull
+# Request" workflow (pr.yml) stays in the repository untouched and is switched
+# off in the fork's Actions settings, so upstream changes to it and to ci.yml
+# keep merging without conflicts.
+#
+# What differs from upstream's run:
+# - Unit tests run as two halves side by side.
+# - Only the system tests for what this fork changed run on every pull
+#   request. The whole system suite (about 16 minutes) runs for upstream
+#   merges (branches named upstream-sync-*) and when started by hand.
+# - The JavaScript unit tests run, which upstream's CI never did.
+# - A newer push to the same pull request cancels the run before it.
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths-ignore:
+      - 'charts/**'
+      - 'mobile/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fork-pr-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  # System tests that cover this fork's own pages and the chart it changed.
+  FORK_SYSTEM_TESTS: >-
+    test/system/cash_flow_group_by_test.rb
+    test/system/cash_flow_sort_test.rb
+    test/system/home_cash_flow_test.rb
+    test/system/projects_test.rb
+
+jobs:
+  # The pinned ruby/setup-ruby action does not support Ubuntu 26.04.
+  scan_ruby:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@97ecb7b512899eb71ab1bf2310a624c6f1589ac6 # v1.308.0
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: Scan for security vulnerabilities in Ruby code
+        run: bin/brakeman --no-pager
+
+  lint:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@97ecb7b512899eb71ab1bf2310a624c6f1589ac6 # v1.308.0
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: Lint code for consistent style
+        run: bin/rubocop -f github
+
+  js:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint JavaScript
+        run: npm run lint
+
+      - name: JavaScript unit tests
+        run: node --test "test/javascript/**/*.mjs"
+
+  test_unit:
+    name: test_unit (${{ matrix.half }} of 2)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        half: [1, 2]
+
+    env:
+      PLAID_CLIENT_ID: foo
+      PLAID_SECRET: bar
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432 # pipelock:ignore
+      REDIS_URL: redis://localhost:6379
+      RAILS_ENV: test
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: --health-cmd="pg_isready" --health-interval=10s --health-timeout=5s --health-retries=3
+
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: Install packages
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y curl libvips postgresql-client libpq-dev
+
+      - name: Checkout code
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@97ecb7b512899eb71ab1bf2310a624c6f1589ac6 # v1.308.0
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: DB setup and smoke test
+        run: |
+          bin/rails db:create
+          bin/rails db:schema:load
+          bin/rails db:seed
+
+      # Every other test file, in name order, so the halves stay close in
+      # size as files are added.
+      - name: Unit and integration tests
+        env:
+          HALF: ${{ matrix.half }}
+        run: |
+          mapfile -t files < <(find test -name '*_test.rb' -not -path 'test/system/*' | sort | awk -v half="$HALF" 'NR % 2 == half % 2')
+          echo "Running ${#files[@]} test files"
+          bin/rails test "${files[@]}"
+
+      # Same rerun as upstream's ci.yml: tests that check encryption_ready?
+      # skip without keys, so they run once more with throwaway ones.
+      - name: Encryption tests
+        if: ${{ !cancelled() && matrix.half == 1 }}
+        env:
+          ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY: test
+          ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY: test
+          ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT: test
+        run: |
+          mapfile -t files < <(grep -rl --include='*_test.rb' 'encryption_ready?' test | sort)
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No encryption tests found" >&2
+            exit 1
+          fi
+          printf '%s\n' "${files[@]}"
+          bin/rails test "${files[@]}"
+
+  test_system:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+
+    env:
+      PLAID_CLIENT_ID: foo
+      PLAID_SECRET: bar
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432 # pipelock:ignore
+      REDIS_URL: redis://localhost:6379
+      RAILS_ENV: test
+      # The whole suite for upstream merges and for runs started by hand.
+      FULL_SYSTEM: ${{ github.event_name == 'workflow_dispatch' || startsWith(github.head_ref, 'upstream-sync') }}
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: --health-cmd="pg_isready" --health-interval=10s --health-timeout=5s --health-retries=3
+
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: Install packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            google-chrome-stable curl libvips postgresql-client libpq-dev
+          # The runner image ships a chromedriver that lags google-chrome-stable.
+          # Drop it so Selenium Manager resolves a driver matching the Chrome we
+          # just installed, instead of the stale one in PATH.
+          sudo rm -f /usr/bin/chromedriver
+
+      - name: Checkout code
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@97ecb7b512899eb71ab1bf2310a624c6f1589ac6 # v1.308.0
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: DB setup and smoke test
+        run: |
+          bin/rails db:create
+          bin/rails db:schema:load
+          bin/rails db:seed
+
+      - name: System tests
+        run: |
+          if [ "$FULL_SYSTEM" = "true" ]; then
+            DISABLE_PARALLELIZATION=true bin/rails test:system
+          else
+            read -r -a files <<< "$FORK_SYSTEM_TESTS"
+            DISABLE_PARALLELIZATION=true bin/rails test "${files[@]}"
+          fi
+
+      - name: Keep screenshots from failed system tests
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        if: failure()
+        with:
+          name: screenshots
+          path: ${{ github.workspace }}/tmp/screenshots
+          if-no-files-found: ignore
