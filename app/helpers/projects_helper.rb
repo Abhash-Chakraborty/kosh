@@ -44,6 +44,30 @@ module ProjectsHelper
     line.incoming? ? "+#{amount}" : amount
   end
 
+  # Active projects for the strip that switches between Home and one project.
+  def project_switcher_projects
+    Current.family.projects.active.ordered.to_a
+  end
+
+  # Where a project stands, for its line on Home and on the projects page:
+  # "₹1,752.02 left to pay · ₹6,005.17 in all". Nil when nothing has moved.
+  def project_position(totals)
+    sheet = Project::CostSheet.new(totals)
+    return unless sheet.any?
+
+    parts = []
+    if sheet.open?
+      left = sheet.left_to_pay
+      parts << (left.negative? ? t("projects.position.to_receive", amount: format_money(left.abs)) : t("projects.position.to_pay", amount: format_money(left)))
+    end
+    parts << if sheet.earns?
+      t("projects.position.profit", amount: format_money(sheet.profit))
+    else
+      t("projects.position.final_cost", amount: format_money(sheet.net_cost))
+    end
+    parts.join(" · ")
+  end
+
   def project_account_options(accounts)
     accounts.map { |account| [ account.name, account.id ] }
   end

@@ -28,6 +28,7 @@ class Project::CostSheetTest < ActiveSupport::TestCase
     assert_equal Money.new(25, "USD"), sheet.received
     assert_equal Money.new(25, "USD"), sheet.net_cost
     assert_not sheet.open?
+    assert_equal Money.new(25, "USD"), sheet.coming_in
   end
 
   test "open IOUs are lines that haven't moved yet" do
@@ -51,6 +52,10 @@ class Project::CostSheetTest < ActiveSupport::TestCase
     assert_equal Money.new(-1450, "USD"), sheet.net_cost
     assert_equal Money.new(-1460, "USD"), sheet.left_to_pay
     assert sheet.open?
+    # Money is coming in, so the sheet reads as profit: $1,500 - $50 of cost.
+    assert sheet.earns?
+    assert_equal Money.new(1500, "USD"), sheet.coming_in
+    assert_equal Money.new(1450, "USD"), sheet.profit
   end
 
   test "paying a project's IOU moves it from to pay to paid without changing the cost" do
@@ -78,6 +83,14 @@ class Project::CostSheetTest < ActiveSupport::TestCase
 
     assert_equal Money.new(0, "USD"), sheet.to_pay
     assert_equal Money.new(50, "USD"), sheet.paid
+  end
+
+  test "a line carries the note that explains it" do
+    ious(:dinner).update!(project: @project, notes: "Half of the bill at the cafe")
+
+    line = sheet_for(@admin).groups.flat_map(&:lines).find { |candidate| candidate.kind == :to_pay }
+
+    assert_equal "Half of the bill at the cafe", line.note
   end
 
   test "is empty for a project with nothing in it" do

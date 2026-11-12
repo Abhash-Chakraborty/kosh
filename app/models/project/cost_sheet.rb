@@ -5,7 +5,7 @@
 # Built on Project::Totals, so it covers the same accounts and leaves out the
 # same entries (transfers, excluded ones, split parents).
 class Project::CostSheet
-  Line = Data.define(:kind, :name, :date, :amount, :person) do
+  Line = Data.define(:kind, :name, :date, :amount, :person, :note) do
     # Money coming to the family, moved already or still expected.
     def incoming? = kind.in?(%i[received to_receive])
 
@@ -53,6 +53,25 @@ class Project::CostSheet
     money(groups.sum(0.to_d, &:net_cost))
   end
 
+  # Everything the project brings in, received or still expected: for client
+  # work, what the client pays in all.
+  def coming_in
+    money(sum(:received) + sum(:to_receive))
+  end
+
+  # A project that brings in more than it costs is judged by its profit. A
+  # trip where a friend pays back their half brings money in too, but still
+  # costs: that one keeps its final cost.
+  def earns?
+    net_cost.negative?
+  end
+
+  # What is left of the money coming in after every cost, including ones
+  # nobody is paying back.
+  def profit
+    money(-net_cost.amount)
+  end
+
   # What still has to leave the family's pocket, after what comes back.
   # Negative when more is still to come in than to go out.
   def left_to_pay
@@ -90,7 +109,7 @@ class Project::CostSheet
     def entry_lines
       @totals.entry_amounts.map do |entry, amount|
         kind = amount.negative? ? :received : :paid
-        [ entry.entryable.category, Line.new(kind: kind, name: entry.name, date: entry.date, amount: amount.abs, person: nil) ]
+        [ entry.entryable.category, Line.new(kind: kind, name: entry.name, date: entry.date, amount: amount.abs, person: nil, note: entry.notes.presence) ]
       end
     end
 
@@ -99,7 +118,7 @@ class Project::CostSheet
       @totals.open_ious.filter_map do |iou|
         amount = iou.remaining_amount_money.exchange_to(@currency).amount
         kind = iou.i_owe? ? :to_pay : :to_receive
-        [ iou.category, Line.new(kind: kind, name: iou.description, date: iou.due_on, amount: amount, person: iou.person) ]
+        [ iou.category, Line.new(kind: kind, name: iou.description, date: iou.due_on, amount: amount, person: iou.person, note: iou.notes.presence) ]
       rescue Money::ConversionError
         nil
       end

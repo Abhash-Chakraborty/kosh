@@ -17,6 +17,8 @@
 <% end %>
 
 <div class="@container space-y-6 pb-12 max-w-4xl">
+  <%= render "projects/switcher", current: @project %>
+
   <% if @project.archived? %>
     <%= render DS::Alert.new(message: t(".archived_notice", date: l(@project.archived_at.to_date, format: :long)), variant: :info) %>
   <% end %>

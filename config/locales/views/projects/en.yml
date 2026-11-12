@@ -22,13 +22,19 @@ en:
     project:
       spent: Spent
       of_budget: of %{amount}
-      owed_to_you: "%{amount} owed to you"
-      you_owe: "%{amount} you owe"
       archived: Archived
     budget_bar:
       label: "%{percent}% of budget spent"
       left: "%{amount} left"
       over: "%{amount} over"
+    switcher:
+      label: Switch between the overview and one project
+      overview: Overview
+    position:
+      to_pay: "%{amount} left to pay"
+      to_receive: "%{amount} still to come in"
+      final_cost: "%{amount} in all"
+      profit: "%{amount} profit"
     cost_sheet:
       title: Cost sheet
       hint: Every amount once, whether paid, still to pay or still to come back.
@@ -42,7 +48,8 @@ en:
       to_pay: Still to pay
       to_receive: Still to come back
       net_cost: Final cost to you
-      net_gain: You come out ahead by
+      coming_in: Coming in, in all
+      profit: Profit after every cost
       left_to_pay: Left to pay from your pocket
       left_to_receive: Left to come to you
     entry:

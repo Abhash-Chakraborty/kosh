@@ -18,9 +18,8 @@
           </div>
           <% if project.budget %>
             <%= render "projects/budget_bar", project: project, totals: totals %>
-          <% else %>
-            <p class="text-xs text-secondary truncate"><%= project_subtitle(project) %></p>
           <% end %>
+          <p class="text-xs text-secondary truncate privacy-sensitive"><%= project_position(totals) || project_subtitle(project) %></p>
         </div>
       <% end %>
     <% end %>

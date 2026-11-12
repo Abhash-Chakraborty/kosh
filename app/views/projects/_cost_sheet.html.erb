@@ -20,6 +20,9 @@
               <div class="min-w-0 flex-1">
                 <p class="text-secondary truncate" title="<%= line.name %>"><%= line.name %></p>
                 <p class="text-xs text-subdued truncate"><%= project_cost_line_detail(line) %></p>
+                <% if line.note %>
+                  <p class="text-xs text-subdued whitespace-pre-line"><%= line.note %></p>
+                <% end %>
               </div>
               <p class="tabular-nums whitespace-nowrap privacy-sensitive <%= line.incoming? ? "text-success" : "text-primary" %>"><%= project_cost_line_amount(sheet, line) %></p>
             </li>
@@ -38,10 +41,12 @@
       <% if sheet.to_receive.positive? %>
         <%= render "projects/cost_row", label: t("projects.cost_sheet.to_receive"), value: sheet.to_receive %>
       <% end %>
-      <%= render "projects/cost_row",
-            label: sheet.net_cost.negative? ? t("projects.cost_sheet.net_gain") : t("projects.cost_sheet.net_cost"),
-            value: sheet.net_cost.abs,
-            strong: true %>
+      <% if sheet.earns? %>
+        <%= render "projects/cost_row", label: t("projects.cost_sheet.coming_in"), value: sheet.coming_in %>
+        <%= render "projects/cost_row", label: t("projects.cost_sheet.profit"), value: sheet.profit, strong: true %>
+      <% else %>
+        <%= render "projects/cost_row", label: t("projects.cost_sheet.net_cost"), value: sheet.net_cost, strong: true %>
+      <% end %>
       <% if sheet.open? %>
         <%= render "projects/cost_row",
               label: sheet.left_to_pay.negative? ? t("projects.cost_sheet.left_to_receive") : t("projects.cost_sheet.left_to_pay"),

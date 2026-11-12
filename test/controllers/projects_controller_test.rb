@@ -60,6 +60,35 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
     assert_select "dt", text: "Left to pay from your pocket"
   end
 
+  test "a project that brings money in shows its profit" do
+    ious(:client_fee).update!(project: projects(:lisbon))
+
+    get project_url(projects(:lisbon))
+
+    assert_select "dt", text: "Coming in, in all"
+    assert_select "dt", text: "Profit after every cost"
+    assert_select "dt", text: "Final cost to you", count: 0
+  end
+
+  test "the project page and Home switch between the overview and each project" do
+    get project_url(projects(:lisbon))
+    assert_select "nav a[href='#{root_path}']", text: "Overview"
+    assert_select "nav a[aria-current='true'][href='#{project_path(projects(:lisbon))}']", text: "Lisbon trip"
+
+    get root_url
+    assert_select "nav a[aria-current='true'][href='#{root_path}']", text: "Overview"
+    assert_select "nav a[href='#{project_path(projects(:lisbon))}']", text: "Lisbon trip"
+    assert_select "nav a[href='#{project_path(projects(:old_kitchen))}']", count: 0
+  end
+
+  test "the projects page says where each project stands" do
+    ious(:dinner).update!(project: projects(:lisbon))
+
+    get projects_url
+
+    assert_select "##{dom_id(projects(:lisbon))} p", text: "$40.00 left to pay · $50.00 in all"
+  end
+
   test "the account filter narrows the project page" do
     get project_url(@project, account_id: accounts(:connected).id)
 

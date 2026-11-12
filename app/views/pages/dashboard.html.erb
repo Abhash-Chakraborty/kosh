@@ -59,6 +59,8 @@
   </div>
 <% end %>
 
+<%= render "projects/switcher" %>
+
 <%= turbo_frame_tag "dashboard_sections", target: "_top" do %>
   <% if accessible_accounts.any? %>
     <div class="flex items-center justify-end mb-4">
