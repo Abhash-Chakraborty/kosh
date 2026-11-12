@@ -1,0 +1,58 @@
+<%# locals: (sheet:) %>
+<section class="space-y-2" aria-labelledby="project-cost-sheet-title">
+  <div class="space-y-0.5">
+    <h2 id="project-cost-sheet-title" class="text-sm font-medium text-primary"><%= t("projects.cost_sheet.title") %></h2>
+    <p class="text-xs text-secondary"><%= t("projects.cost_sheet.hint") %></p>
+  </div>
+  <div class="rounded-xl bg-container shadow-border-xs divide-y divide-primary">
+    <% sheet.groups.each do |group| %>
+      <div class="p-3 @lg:p-4 space-y-2" data-cost-group="<%= group.key %>">
+        <div class="flex items-center gap-2 min-w-0">
+          <% if group.color %>
+            <span class="size-2 rounded-full shrink-0" style="background-color: <%= group.color %>" aria-hidden="true"></span>
+          <% end %>
+          <h3 class="text-sm font-medium text-primary truncate flex-1"><%= group.name || t("projects.show.uncategorized") %></h3>
+          <p class="text-sm font-medium text-primary tabular-nums whitespace-nowrap privacy-sensitive"><%= format_money(sheet.money(group.net_cost)) %></p>
+        </div>
+        <ul class="space-y-1.5">
+          <% group.lines.each do |line| %>
+            <li class="flex items-start gap-2 text-sm min-w-0">
+              <div class="min-w-0 flex-1">
+                <p class="text-secondary truncate" title="<%= line.name %>"><%= line.name %></p>
+                <p class="text-xs text-subdued truncate"><%= project_cost_line_detail(line) %></p>
+                <% if line.note %>
+                  <p class="text-xs text-subdued whitespace-pre-line"><%= line.note %></p>
+                <% end %>
+              </div>
+              <p class="tabular-nums whitespace-nowrap privacy-sensitive <%= line.incoming? ? "text-success" : "text-primary" %>"><%= project_cost_line_amount(sheet, line) %></p>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+    <dl class="p-3 @lg:p-4 space-y-1.5 text-sm">
+      <%= render "projects/cost_row", label: t("projects.cost_sheet.paid"), value: sheet.paid %>
+      <% if sheet.received.positive? %>
+        <%= render "projects/cost_row", label: t("projects.cost_sheet.received"), value: sheet.received %>
+      <% end %>
+      <% if sheet.to_pay.positive? %>
+        <%= render "projects/cost_row", label: t("projects.cost_sheet.to_pay"), value: sheet.to_pay %>
+      <% end %>
+      <% if sheet.to_receive.positive? %>
+        <%= render "projects/cost_row", label: t("projects.cost_sheet.to_receive"), value: sheet.to_receive %>
+      <% end %>
+      <% if sheet.earns? %>
+        <%= render "projects/cost_row", label: t("projects.cost_sheet.coming_in"), value: sheet.coming_in %>
+        <%= render "projects/cost_row", label: t("projects.cost_sheet.profit"), value: sheet.profit, strong: true %>
+      <% else %>
+        <%= render "projects/cost_row", label: t("projects.cost_sheet.net_cost"), value: sheet.net_cost, strong: true %>
+      <% end %>
+      <% if sheet.open? %>
+        <%= render "projects/cost_row",
+              label: sheet.left_to_pay.negative? ? t("projects.cost_sheet.left_to_receive") : t("projects.cost_sheet.left_to_pay"),
+              value: sheet.left_to_pay.abs,
+              strong: true %>
+      <% end %>
+    </dl>
+  </div>
+</section>

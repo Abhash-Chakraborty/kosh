@@ -1,0 +1,5 @@
+<%# locals: (label:, value:, strong: false) %>
+<div class="flex items-baseline justify-between gap-3">
+  <dt class="<%= strong ? "text-primary font-medium" : "text-secondary" %>"><%= label %></dt>
+  <dd class="tabular-nums whitespace-nowrap privacy-sensitive text-primary <%= "font-medium" if strong %>"><%= format_money(value) %></dd>
+</div>

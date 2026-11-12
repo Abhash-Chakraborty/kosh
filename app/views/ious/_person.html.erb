@@ -1,0 +1,16 @@
+<%# locals: (ious:) %>
+<%# One person's open IOUs set against each other, with a way to rename them. %>
+<div class="flex items-center justify-between gap-3 px-3 @lg:px-4 py-2">
+  <p class="text-sm text-secondary min-w-0 truncate privacy-sensitive"><%= iou_person_net_label(ious.first.person, iou_person_net(ious)) %></p>
+  <% unless Current.user.guest? %>
+    <%= render DS::Link.new(
+          text: t("ious.person.rename"),
+          variant: "ghost",
+          size: "sm",
+          icon: "pencil",
+          href: edit_iou_person_path(name: ious.first.person),
+          frame: :modal,
+          aria: { label: t("ious.person.rename_person", person: ious.first.person) }
+        ) %>
+  <% end %>
+</div>

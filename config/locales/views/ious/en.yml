@@ -23,6 +23,12 @@ en:
       success: IOU saved
     destroy:
       success: IOU deleted
+    person:
+      owes_you: "%{person} owes you %{amount} in all"
+      you_owe: You owe %{person} %{amount} in all
+      even: You and %{person} are even
+      rename: Rename
+      rename_person: Rename %{person}
     iou:
       due: Due %{date}
       overdue: Overdue since %{date}
@@ -101,3 +107,15 @@ en:
     destroy:
       success: Payment undone and its transaction deleted
       not_allowed: You can't change transactions in that account.
+  iou_people:
+    edit:
+      title: Rename %{person}
+      new_name: Name
+      hint:
+        one: Changes the name on their one IOU.
+        other: Changes the name on their %{count} IOUs.
+      cancel: Cancel
+      save: Save
+    update:
+      success: Renamed to %{person}
+      invalid: Enter a name of up to 255 characters.

@@ -1,5 +1,5 @@
 /*
- * Graphite: this fork's dark theme.
+ * This fork's look. Mostly Graphite, its dark theme.
  *
  * Only token values change, so every screen (including new ones merged from
  * upstream) follows without touching upstream views or the generated design
@@ -31,4 +31,11 @@
     /* One accent: mint for positive amounts, toggles and success states. */
     --color-success: #8fd9b6;
   }
+}
+
+/* The chat box's four "coming soon" buttons do nothing yet, so they stay out
+   of sight until upstream gives them a job. Unlayered, so it outranks the
+   utility classes that lay the buttons out. */
+#chat-form button:disabled.cursor-not-allowed {
+  display: none;
 }

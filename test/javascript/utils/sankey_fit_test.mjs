@@ -9,6 +9,7 @@ import {
   fittedWidth,
   labelRoom,
   MIN_COLUMN_PITCH,
+  rescuedLabelShifts,
   TARGET_PADDING,
 } from "../../../app/javascript/utils/sankey_fit.mjs";
 
@@ -82,5 +83,36 @@ describe("fitText", () => {
 
   it("gives up when not even a few letters fit", () => {
     assert.equal(fitText("Restaurants", 20, measure), "");
+  });
+});
+
+describe("rescuedLabelShifts", () => {
+  // A parent's label (kept) sits where its one large child's label wants to
+  // be: both centred on the same height, in the gap between their columns.
+  const parent = { index: 0, value: 100, x0: 300, x1: 315, y0: 0, y1: 200 };
+  const child = { index: 1, value: 90, x0: 450, x1: 465, y0: 0, y1: 180 };
+  const boxes = new Map([
+    [0, { x: 321, y: 85, width: 90, height: 30 }],
+    [1, { x: 354, y: 75, width: 90, height: 30 }],
+  ]);
+
+  it("moves a hidden label along its tall bar until it is clear", () => {
+    const shifts = rescuedLabelShifts([parent, child], boxes, new Set([1]));
+    assert.equal(shifts.get(1), 75);
+  });
+
+  it("leaves a label hidden when its bar is shorter than the label", () => {
+    const short = { ...child, y0: 80, y1: 100 };
+    assert.equal(rescuedLabelShifts([parent, short], boxes, new Set([1])).size, 0);
+  });
+
+  it("leaves a label hidden when neither end of the bar is clear", () => {
+    const crowded = new Map(boxes);
+    crowded.set(0, { x: 321, y: 0, width: 130, height: 200 });
+    assert.equal(rescuedLabelShifts([parent, child], crowded, new Set([1])).size, 0);
+  });
+
+  it("has nothing to do when no label is hidden", () => {
+    assert.equal(rescuedLabelShifts([parent, child], boxes, new Set()).size, 0);
   });
 });

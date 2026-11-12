@@ -22,6 +22,7 @@ class ProjectsController < ApplicationController
     @account = @accounts.find { |account| account.id == params[:account_id] } if params[:account_id].present?
     scope = @account ? Account.where(id: @account.id) : Current.user.accessible_accounts
     @totals = @project.totals(accounts: scope)
+    @cost_sheet = Project::CostSheet.new(@totals)
     @entries = @project.entries_in(scope).limit(ENTRY_LIMIT + 1).to_a
     @more_entries = @entries.size > ENTRY_LIMIT
     @entries = @entries.first(ENTRY_LIMIT)

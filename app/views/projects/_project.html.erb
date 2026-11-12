@@ -25,9 +25,8 @@
     <% end %>
   </div>
 
-  <% owed = [ (t("projects.project.owed_to_you", amount: format_money(totals.owed_to_you)) if totals.owed_to_you.positive?),
-              (t("projects.project.you_owe", amount: format_money(totals.you_owe)) if totals.you_owe.positive?) ].compact %>
-  <% if owed.any? %>
-    <p class="text-xs text-secondary truncate privacy-sensitive"><%= owed.join(" · ") %></p>
+  <% position = project_position(totals) %>
+  <% if position %>
+    <p class="text-xs text-secondary truncate privacy-sensitive"><%= position %></p>
   <% end %>
 <% end %>

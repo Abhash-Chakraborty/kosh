@@ -1,0 +1,14 @@
+<%# locals: (current: nil) %>
+<%# Home shows every project together; each project's page shows only its own
+    money. This strip switches between them. %>
+<% projects = project_switcher_projects %>
+<% if projects.any? %>
+  <nav class="mb-4 max-w-full overflow-x-auto" aria-label="<%= t("projects.switcher.label") %>">
+    <%= render DS::SegmentedControl.new(aria_label: t("projects.switcher.label")) do |control| %>
+      <% control.with_segment(t("projects.switcher.overview"), href: root_path, active: current.nil?, class: "whitespace-nowrap") %>
+      <% projects.each do |project| %>
+        <% control.with_segment(project.name, href: project_path(project), active: project == current, class: "whitespace-nowrap") %>
+      <% end %>
+    <% end %>
+  </nav>
+<% end %>

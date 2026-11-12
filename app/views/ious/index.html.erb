@@ -40,6 +40,7 @@
       <div class="rounded-xl bg-surface-inset space-y-1 p-1">
         <% @open_groups.each do |ious| %>
           <%= render DS::Section.new(title: ious.first.person, count: ious.size, inset: false) do %>
+            <%= render "ious/person", ious: ious %>
             <% ious.each do |iou| %>
               <%= render "ious/iou", iou: iou %>
             <% end %>

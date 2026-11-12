@@ -80,6 +80,7 @@ class IousController < ApplicationController
       @accounts = form_accounts
       @categories = Current.family.categories.alphabetically_by_hierarchy.to_a
       @projects = Current.family.projects.active.or(Current.family.projects.where(id: @iou.project_id)).ordered.to_a
+      @people = Current.family.ious.distinct.order(:person).pluck(:person)
     end
 
     def form_accounts

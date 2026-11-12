@@ -12,6 +12,7 @@ import {
   fittedPadding,
   fittedWidth,
   labelRoom,
+  rescuedLabelShifts,
 } from "utils/sankey_fit";
 import { hiddenSankeyLabels } from "utils/sankey_labels";
 import {
@@ -539,11 +540,17 @@ export default class extends Controller {
 
   #addNodeLabels(svg, nodeGroups, labelOnRight, nodes, { width, height }) {
     const controller = this;
-    const hiddenLabels = this.#calculateHiddenLabels(
-      nodes,
-      this.#measureLabels(svg, nodes, labelOnRight, width),
-      height,
-    );
+    const labelBoxes = this.#measureLabels(svg, nodes, labelOnRight, width);
+    const hiddenLabels = this.#calculateHiddenLabels(nodes, labelBoxes, height);
+    // A tall bar keeps its label by moving it off the label it collided with.
+    rescuedLabelShifts(
+      nodes.filter((d) => d.labelName),
+      labelBoxes,
+      hiddenLabels,
+    ).forEach((shift, index) => {
+      nodes.find((d) => d.index === index).labelShift = shift;
+      hiddenLabels.delete(index);
+    });
 
     nodeGroups
       .append("text")
@@ -573,7 +580,7 @@ export default class extends Controller {
 
     textEl
       .attr("x", x)
-      .attr("y", (d.y1 + d.y0) / 2)
+      .attr("y", (d.y1 + d.y0) / 2 + (d.labelShift || 0))
       .attr("dy", "-0.2em")
       .attr("text-anchor", right ? "start" : "end");
 

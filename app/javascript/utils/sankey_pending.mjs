@@ -43,12 +43,17 @@ export function layoutPendingFlows(nodes, pending, { nodeWidth }) {
     (node) => node.kind === "cash_flow" || node.kind === "account",
   );
   if (!hubs.length) return [];
-  const hubX = Math.round(hubs[0].x0);
+  // Grouped by account there is a hub per account, and they can sit in
+  // different columns: incoming rows go left of the leftmost, outgoing rows
+  // right of the rightmost, so neither lands between two hubs.
+  const hubXs = hubs.map((node) => Math.round(node.x0));
+  const firstHubX = Math.min(...hubXs);
+  const lastHubX = Math.max(...hubXs);
   const columns = [...new Set(nodes.map((node) => Math.round(node.x0)))].sort(
     (a, b) => a - b,
   );
-  const before = columns.filter((x) => x < hubX).pop();
-  const after = columns.find((x) => x > hubX);
+  const before = columns.filter((x) => x < firstHubX).pop();
+  const after = columns.find((x) => x > lastHubX);
 
   // Pixels per unit, from the largest real node, so a pending bar reads on
   // the same scale until it hits the clamp.
@@ -70,7 +75,7 @@ export function layoutPendingFlows(nodes, pending, { nodeWidth }) {
     if (!flows.length) continue;
 
     const column = incoming ? before : after;
-    const x0 = column ?? hubX;
+    const x0 = column ?? (incoming ? firstHubX : lastHubX);
     const top = bottomOf(x0) + GAP;
 
     flows.forEach((flow, row) => {
@@ -89,7 +94,9 @@ export function layoutPendingFlows(nodes, pending, { nodeWidth }) {
       };
       // Without a column on that side there is nowhere for a pipe to run.
       if (column !== undefined) {
-        const gap = incoming ? hub.x0 - node.x1 : node.x0 - hub.x1;
+        const gap = incoming
+          ? firstHubX - node.x1
+          : node.x0 - (lastHubX + nodeWidth);
         const length = Math.min(MAX_PIPE, gap * PIPE_REACH);
         const rise = Math.max(-MAX_RISE, Math.min(MAX_RISE, hub.y1 - mid));
         node.pipe = incoming
