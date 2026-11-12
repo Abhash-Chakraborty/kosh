@@ -151,6 +151,11 @@ jobs:
           bin/rails db:schema:load
           bin/rails db:seed
 
+      # `bin/rails test` builds the CSS first only when it picks the files
+      # itself; given a list of files it doesn't, and pages fail to render.
+      - name: Build CSS
+        run: bin/rails tailwindcss:build
+
       # Every other test file, in name order, so the halves stay close in
       # size as files are added.
       - name: Unit and integration tests
@@ -234,6 +239,9 @@ jobs:
           bin/rails db:create
           bin/rails db:schema:load
           bin/rails db:seed
+
+      - name: Build CSS
+        run: bin/rails tailwindcss:build
 
       - name: System tests
         run: |
