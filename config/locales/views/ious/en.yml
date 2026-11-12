@@ -23,6 +23,15 @@ en:
       success: IOU saved
     destroy:
       success: IOU deleted
+    account_outstanding:
+      title: Still owed on this account
+      all: All IOUs
+      you_owe: You still have to pay
+      owed_to_you: Still to come in
+      settled_balance: Balance once all is settled
+      to: You owe %{person}
+      from: "%{person} owes you"
+      paid_of: "%{percent}% paid of %{amount}"
     person:
       owes_you: "%{person} owes you %{amount} in all"
       you_owe: You owe %{person} %{amount} in all

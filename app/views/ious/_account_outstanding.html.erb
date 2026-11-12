@@ -1,0 +1,60 @@
+<%# locals: (account:) %>
+<%# On an account's page: the IOUs that will be paid from it or into it. %>
+<% outstanding = Iou::AccountOutstanding.new(account) %>
+<% if outstanding.any? %>
+  <%= render DS::Card.new(class: "@container gap-4 p-4", id: "account-outstanding") do %>
+    <div class="flex items-baseline justify-between gap-3">
+      <h2 class="text-sm font-medium text-primary"><%= t("ious.account_outstanding.title") %></h2>
+      <%= link_to t("ious.account_outstanding.all"), ious_path, data: { turbo_frame: "_top" }, class: "text-xs text-secondary underline-offset-2 hover:text-primary hover:underline" %>
+    </div>
+
+    <dl class="grid grid-cols-2 @lg:grid-cols-3 gap-3">
+      <div class="space-y-0.5 min-w-0">
+        <dt class="text-xs text-secondary truncate"><%= t("ious.account_outstanding.you_owe") %></dt>
+        <dd class="text-lg font-medium text-primary tabular-nums truncate privacy-sensitive"><%= format_money(outstanding.you_owe) %></dd>
+      </div>
+      <div class="space-y-0.5 min-w-0">
+        <dt class="text-xs text-secondary truncate"><%= t("ious.account_outstanding.owed_to_you") %></dt>
+        <dd class="text-lg font-medium text-primary tabular-nums truncate privacy-sensitive"><%= format_money(outstanding.owed_to_you) %></dd>
+      </div>
+      <% if outstanding.settled_balance %>
+        <div class="space-y-0.5 min-w-0 col-span-2 @lg:col-span-1">
+          <dt class="text-xs text-secondary truncate"><%= t("ious.account_outstanding.settled_balance") %></dt>
+          <dd class="text-lg font-medium text-primary tabular-nums truncate privacy-sensitive"><%= format_money(outstanding.settled_balance) %></dd>
+        </div>
+      <% end %>
+    </dl>
+
+    <ul class="divide-y divide-primary">
+      <% outstanding.ious.each do |iou| %>
+        <li id="<%= dom_id(iou, :outstanding) %>" class="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-medium text-primary truncate"><%= iou.description %></p>
+            <p class="text-xs text-secondary truncate"><%= iou_outstanding_details(iou) %></p>
+            <% if iou.notes.present? %>
+              <p class="text-xs text-subdued truncate" title="<%= iou.notes %>"><%= iou.notes %></p>
+            <% end %>
+          </div>
+          <div class="shrink-0 text-right">
+            <p class="text-sm font-medium tabular-nums whitespace-nowrap privacy-sensitive <%= iou.owed_to_me? ? "text-success" : "text-primary" %>"><%= iou.owed_to_me? ? "+" : "" %><%= format_money(iou.remaining_amount_money) %></p>
+            <% if iou.partly_paid? %>
+              <p class="text-xs text-secondary tabular-nums whitespace-nowrap privacy-sensitive"><%= t("ious.account_outstanding.paid_of", percent: iou_paid_percent(iou), amount: format_money(iou.amount_money)) %></p>
+            <% end %>
+          </div>
+          <% unless Current.user.guest? %>
+            <div class="hidden @lg:block shrink-0">
+              <%= render DS::Link.new(
+                    text: t("ious.iou.record_payment"),
+                    variant: "outline",
+                    size: "sm",
+                    href: new_iou_payment_path(iou),
+                    frame: :modal,
+                    aria: { label: t("ious.iou.record_payment_for", description: iou.description) }
+                  ) %>
+            </div>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+<% end %>

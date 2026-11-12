@@ -41,6 +41,33 @@ class AccountsControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href='#{new_transaction_transfer_match_path(outflow)}']", text: I18n.t("transactions.transaction.transfer_hint")
   end
 
+  test "show lists the IOUs still owed on the account, with the balance once settled" do
+    ious(:dinner).update!(account: @account, project: projects(:lisbon))
+
+    get account_url(@account)
+
+    assert_response :success
+    assert_select "#account-outstanding h2", text: "Still owed on this account"
+    assert_select "#account-outstanding dt", text: "Balance once all is settled"
+    assert_select "##{dom_id(ious(:dinner), :outstanding)} a[href='#{project_path(projects(:lisbon))}'][data-turbo-frame='_top']", text: "Lisbon trip"
+    assert_select "##{dom_id(ious(:client_fee), :outstanding)} p", text: "+$1,500.00"
+  end
+
+  test "show has no owed section for an account without open IOUs" do
+    get account_url(accounts(:connected))
+
+    assert_response :success
+    assert_select "#account-outstanding", count: 0
+  end
+
+  test "show says how much of a partly paid IOU is paid" do
+    ious(:client_fee).record_payment(amount: 300, date: Date.current, account: @account)
+
+    get account_url(@account)
+
+    assert_select "##{dom_id(ious(:client_fee), :outstanding)} p", text: "20% paid of $1,500.00"
+  end
+
   test "show filters account activity to uncategorized transactions" do
     uncategorized = create_transaction(account: @account, name: "Uncategorized Filter Target", category: nil)
     categorized = create_transaction(account: @account, name: "Categorized Filter Decoy", category: categories(:food_and_drink))
