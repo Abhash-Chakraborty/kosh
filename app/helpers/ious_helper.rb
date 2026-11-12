@@ -38,8 +38,31 @@ module IousHelper
   # The project links to its page.
   def iou_details(iou)
     parts = [ iou_direction_label(iou), iou_account_label(iou.account, iou) ].compact
-    parts << link_to(iou.project.name, project_path(iou.project), class: "underline-offset-2 hover:text-primary hover:underline") if iou.project
+    parts << iou_project_link(iou) if iou.project
     safe_join(parts, " · ")
+  end
+
+  # The project an IOU belongs to. `_top`, because the link also sits on the
+  # account page, inside that page's turbo frame.
+  def iou_project_link(iou)
+    link_to iou.project.name, project_path(iou.project), data: { turbo_frame: "_top" }, class: "underline-offset-2 hover:text-primary hover:underline"
+  end
+
+  # Who, when and what for, under an IOU on its account's page:
+  # "You owe Zostel · Due 28 Nov · Bangalore trip · Stays".
+  def iou_outstanding_details(iou)
+    who = iou.owed_to_me? ? t("ious.account_outstanding.from", person: iou.person) : t("ious.account_outstanding.to", person: iou.person)
+    parts = [ who, iou_due_label(iou) ]
+    parts << iou_project_link(iou) if iou.project
+    parts << iou.category.name if iou.category
+    safe_join(parts.compact, " · ")
+  end
+
+  # Share of an IOU already paid, as a whole percent.
+  def iou_paid_percent(iou)
+    return 0 unless iou.amount.to_d.positive?
+
+    (iou.paid_amount.to_d / iou.amount.to_d * 100).round
   end
 
   # One person's open IOUs set against each other, in the family's currency:
