@@ -85,3 +85,52 @@ export function fitText(text, room, measure, minChars = 3) {
   }
   return best;
 }
+
+
+// A second chance for labels the overlap rule hid. A bar taller than its
+// label can carry the label near its bottom or top edge instead of its
+// middle, clear of whatever it collided with: typically a parent's label
+// beside its one large child. Returns a Map of node index to the vertical
+// shift for each label that found room; the rest stay hidden.
+export function rescuedLabelShifts(nodes, labelBoxes, hidden, clearance = 2) {
+  const overlaps = (a, b) =>
+    a.x < b.x + b.width + clearance &&
+    b.x < a.x + a.width + clearance &&
+    a.y < b.y + b.height + clearance &&
+    b.y < a.y + a.height + clearance;
+  const bars = nodes.map((node) => ({
+    node,
+    x: node.x0,
+    y: node.y0,
+    width: node.x1 - node.x0,
+    height: node.y1 - node.y0,
+  }));
+  const placed = nodes
+    .filter((node) => !hidden.has(node.index) && labelBoxes.has(node.index))
+    .map((node) => labelBoxes.get(node.index));
+  const shifts = new Map();
+
+  nodes
+    .filter((node) => hidden.has(node.index) && labelBoxes.has(node.index))
+    .sort((a, b) => b.value - a.value)
+    .forEach((node) => {
+      const box = labelBoxes.get(node.index);
+      if (node.y1 - node.y0 < box.height) return;
+
+      const toBottom = node.y1 - (box.y + box.height);
+      const toTop = node.y0 - box.y;
+      for (const shift of [toBottom, toTop]) {
+        const moved = { ...box, y: box.y + shift };
+        const blocked =
+          placed.some((other) => overlaps(moved, other)) ||
+          bars.some((bar) => bar.node !== node && overlaps(moved, bar));
+        if (!blocked) {
+          shifts.set(node.index, shift);
+          placed.push(moved);
+          break;
+        }
+      }
+    });
+
+  return shifts;
+}

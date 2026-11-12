@@ -84,3 +84,25 @@ describe("linkPath", () => {
     assert.equal(linkPath({ x: 0, y: 0 }, { x: 100, y: 50 }), "M0,0C50,0,50,50,100,50");
   });
 });
+
+describe("layoutPendingFlows grouped by account", () => {
+  // Two account hubs in different columns: 300 and 450.
+  const byAccount = [
+    { id: "income_salary", kind: "income", value: 200, x0: 16, x1: 31, y0: 16, y1: 216 },
+    { id: "account_trip", kind: "account", value: 150, x0: 300, x1: 315, y0: 16, y1: 166 },
+    { id: "account_robot", kind: "account", value: 50, x0: 450, x1: 465, y0: 180, y1: 230 },
+    { id: "expense_travel", kind: "expense", value: 150, x0: 600, x1: 615, y0: 16, y1: 166 },
+  ];
+
+  it("keeps money you owe to the right of every hub, with room for its name", () => {
+    const [outgoing] = layoutPendingFlows(byAccount, [owe("zostel", 40)], { nodeWidth: 15 });
+    assert.equal(outgoing.x0, 600);
+    assert.ok(outgoing.room > 60);
+  });
+
+  it("keeps money owed to you to the left of every hub", () => {
+    const [incoming] = layoutPendingFlows(byAccount, [owed("client", 40)], { nodeWidth: 15 });
+    assert.equal(incoming.x0, 16);
+    assert.ok(incoming.room > 60);
+  });
+});
