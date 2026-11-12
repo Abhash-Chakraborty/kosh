@@ -42,6 +42,25 @@ module IousHelper
     safe_join(parts, " · ")
   end
 
+  # One person's open IOUs set against each other, in the family's currency:
+  # positive when they owe the family on balance.
+  def iou_person_net(ious)
+    currency = Current.family.primary_currency_code
+    owed_to_you, _skipped = Iou.remaining_total(ious.select(&:owed_to_me?), currency: currency)
+    you_owe, _skipped = Iou.remaining_total(ious.select(&:i_owe?), currency: currency)
+    owed_to_you - you_owe
+  end
+
+  def iou_person_net_label(person, net)
+    if net.positive?
+      t("ious.person.owes_you", person: person, amount: format_money(net))
+    elsif net.negative?
+      t("ious.person.you_owe", person: person, amount: format_money(net.abs))
+    else
+      t("ious.person.even", person: person)
+    end
+  end
+
   def iou_direction_options
     Iou::DIRECTIONS.map { |direction| [ t("ious.form.directions.#{direction}"), direction ] }
   end

@@ -1,0 +1,21 @@
+<%= render DS::Dialog.new do |dialog| %>
+  <% dialog.with_header(title: t(".title", person: @name)) %>
+  <% dialog.with_body do %>
+    <%= styled_form_with scope: :iou_person, url: iou_person_path, method: :patch, class: "space-y-4" do |f| %>
+      <% if @error %>
+        <%= render DS::Alert.new(message: @error, variant: :error) %>
+      <% end %>
+
+      <section class="space-y-2">
+        <%= f.hidden_field :name, value: @name %>
+        <%= f.text_field :new_name, value: @new_name || @name, label: t(".new_name"), required: true, autofocus: true, maxlength: 255 %>
+        <p class="text-xs text-secondary px-1"><%= t(".hint", count: @count) %></p>
+      </section>
+
+      <div class="flex justify-end gap-2">
+        <%= render DS::Button.new(text: t(".cancel"), variant: :secondary, data: { action: "DS--dialog#close" }) %>
+        <%= render DS::Button.new(text: t(".save"), type: :submit) %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

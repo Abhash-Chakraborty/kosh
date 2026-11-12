@@ -34,6 +34,8 @@ class Iou < ApplicationRecord
   scope :i_owe, -> { where(direction: "i_owe") }
   scope :outstanding, -> { where("ious.amount > #{PAID_SQL}") }
   scope :settled, -> { where("ious.amount <= #{PAID_SQL}") }
+  # A person is the name on their IOUs, compared without case or outer spaces.
+  scope :for_person, ->(name) { where("LOWER(TRIM(ious.person)) = ?", name.to_s.strip.downcase) }
   scope :by_due_date, -> { order(Arel.sql("ious.due_on IS NULL, ious.due_on, ious.created_at")) }
 
   class << self

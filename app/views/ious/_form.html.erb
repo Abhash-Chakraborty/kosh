@@ -1,4 +1,4 @@
-<%# locals: (iou:, accounts:, categories:, projects: []) %>
+<%# locals: (iou:, accounts:, categories:, projects: [], people: []) %>
 <%= styled_form_with model: iou, class: "space-y-4" do |f| %>
   <% if iou.errors.any? %>
     <%= render "shared/form_errors", model: iou %>
@@ -6,7 +6,12 @@
 
   <section class="space-y-2">
     <%= f.select :direction, iou_direction_options, { label: t("ious.form.direction") } %>
-    <%= f.text_field :person, label: t("ious.form.person"), placeholder: t("ious.form.person_placeholder"), required: true, autofocus: iou.new_record?, maxlength: 255 %>
+    <%= f.text_field :person, label: t("ious.form.person"), placeholder: t("ious.form.person_placeholder"), required: true, autofocus: iou.new_record?, maxlength: 255, list: "iou-people" %>
+    <datalist id="iou-people">
+      <% people.each do |person| %>
+        <option value="<%= person %>"></option>
+      <% end %>
+    </datalist>
     <%= f.text_field :description, label: t("ious.form.description"), placeholder: t("ious.form.description_placeholder"), required: true, maxlength: 255 %>
     <%= f.money_field :amount,
           label: t("ious.form.amount"),

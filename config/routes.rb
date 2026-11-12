@@ -548,6 +548,8 @@ Rails.application.routes.draw do
     end
   end
 
+  # Before the IOU routes, so "person" isn't read as an IOU's id.
+  resource :iou_person, only: %i[edit update], path: "ious/person", controller: "iou_people"
   resources :ious, except: :show do
     resources :payments, only: %i[new create destroy], controller: "iou_payments"
   end

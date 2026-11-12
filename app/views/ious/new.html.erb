@@ -1,6 +1,6 @@
 <%= render DS::Dialog.new do |dialog| %>
   <% dialog.with_header(title: t(".title")) %>
   <% dialog.with_body do %>
-    <%= render "ious/form", iou: @iou, accounts: @accounts, categories: @categories, projects: @projects %>
+    <%= render "ious/form", iou: @iou, accounts: @accounts, categories: @categories, projects: @projects, people: @people %>
   <% end %>
 <% end %>
