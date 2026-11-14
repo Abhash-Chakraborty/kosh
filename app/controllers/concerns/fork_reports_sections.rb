@@ -4,7 +4,7 @@ module ForkReportsSections
 
   private
     def fork_reports_sections
-      projects = Current.family.projects.active.ordered.limit(Project::SUMMARY_LIMIT).to_a
+      projects = Current.family.projects.underway.ordered.limit(Project::SUMMARY_LIMIT).to_a
       [
         {
           key: "projects",

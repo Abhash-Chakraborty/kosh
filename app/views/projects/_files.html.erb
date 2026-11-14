@@ -1,0 +1,67 @@
+<%# locals: (project:, files:) %>
+<%# Tickets, bookings, pictures and receipts kept with the project. %>
+<% pictures, documents = files.partition(&:variable?) %>
+<section id="files" class="space-y-2 scroll-mt-4" aria-labelledby="files-title">
+  <div class="flex items-center justify-between gap-2">
+    <h2 id="files-title" class="text-sm font-medium text-primary"><%= t("projects.files.title") %></h2>
+    <% if !Current.user.guest? && files.size < Project::MAX_FILES %>
+      <%= form_with url: project_files_path(project), scope: :project, multipart: true, data: { controller: "auto-submit-form" } do |form| %>
+        <label class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-sm font-medium text-primary cursor-pointer hover:bg-container-hover focus-within:ring-2 focus-within:ring-focus-ring">
+          <%= icon "plus", size: "sm" %>
+          <span><%= t("projects.files.add") %></span>
+          <%= form.file_field :files, multiple: true, accept: Project::FILE_CONTENT_TYPES.join(","), class: "sr-only",
+                data: { auto_submit_form_target: "auto", autosubmit_trigger_event: "change" } %>
+        </label>
+      <% end %>
+    <% end %>
+  </div>
+
+  <% if files.any? %>
+    <% if pictures.any? %>
+      <ul class="grid grid-cols-3 @lg:grid-cols-4 gap-2">
+        <% pictures.each do |file| %>
+          <li id="<%= dom_id(file) %>" class="relative aspect-square rounded-lg bg-container shadow-border-xs overflow-hidden">
+            <%= link_to rails_blob_path(file, disposition: "inline"), target: "_blank", rel: "noopener", class: "block w-full h-full", title: file.filename.to_s do %>
+              <%= project_file_thumbnail(file) %>
+            <% end %>
+            <% unless Current.user.guest? %>
+              <div class="absolute top-1 right-1">
+                <%= render "projects/file_delete", project: project, file: file %>
+              </div>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+
+    <% if documents.any? %>
+      <ul class="rounded-xl bg-container shadow-border-xs divide-y divide-primary">
+        <% documents.each do |file| %>
+          <li id="<%= dom_id(file) %>" class="flex items-center gap-3 p-3 min-w-0">
+            <%= icon "file-text", size: "sm" %>
+            <div class="min-w-0 flex-1">
+              <%= link_to file.filename.to_s, rails_blob_path(file, disposition: "inline"), target: "_blank", rel: "noopener", class: "block text-sm font-medium text-primary truncate hover:underline underline-offset-2" %>
+              <p class="text-xs text-secondary"><%= number_to_human_size(file.byte_size) %> · <%= iou_short_date(file.created_at.to_date) %></p>
+            </div>
+            <%= render DS::Link.new(
+                  variant: "icon",
+                  icon: "download",
+                  size: "sm",
+                  href: rails_blob_path(file, disposition: "attachment"),
+                  data: { turbo: false },
+                  aria: { label: t("projects.files.download", name: file.filename.to_s) }
+                ) %>
+            <% unless Current.user.guest? %>
+              <%= render "projects/file_delete", project: project, file: file %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  <% else %>
+    <%= render DS::Card.new(class: "p-4") do %>
+      <p class="text-sm text-secondary"><%= project.trip? ? t("projects.files.empty_trip") : t("projects.files.empty") %></p>
+    <% end %>
+  <% end %>
+  <p class="text-xs text-subdued"><%= t("projects.files.limits", count: Project::MAX_FILES, size: Project::MAX_FILE_SIZE / 1.megabyte) %></p>
+</section>

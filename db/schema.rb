@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_11_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_14_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -1588,6 +1588,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_090000) do
     t.index ["project_id"], name: "index_ious_on_project_id"
   end
 
+  create_table "itinerary_items", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.date "ends_on"
+    t.string "kind", default: "activity", null: false
+    t.string "location"
+    t.text "notes"
+    t.uuid "project_id", null: false
+    t.string "reference"
+    t.date "starts_on", null: false
+    t.string "time_of_day"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["project_id", "starts_on"], name: "index_itinerary_items_on_project_id_and_starts_on"
+  end
+
   create_table "kraken_accounts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "account_id", null: false
     t.string "account_type"
@@ -2080,6 +2095,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_090000) do
     t.string "name", null: false
     t.text "notes"
     t.date "start_on"
+    t.string "status", default: "active", null: false
     t.datetime "updated_at", null: false
     t.index ["family_id"], name: "index_projects_on_family_id"
   end
@@ -3335,6 +3351,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_11_090000) do
   add_foreign_key "ious", "categories", on_delete: :nullify
   add_foreign_key "ious", "families"
   add_foreign_key "ious", "projects", on_delete: :nullify
+  add_foreign_key "itinerary_items", "projects", on_delete: :cascade
   add_foreign_key "kraken_accounts", "kraken_items"
   add_foreign_key "kraken_items", "families"
   add_foreign_key "llm_usages", "families"

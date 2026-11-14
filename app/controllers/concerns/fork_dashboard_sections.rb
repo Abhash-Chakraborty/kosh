@@ -33,6 +33,6 @@ module ForkDashboardSections
     end
 
     def dashboard_projects
-      Current.family.projects.active.ordered.limit(Project::SUMMARY_LIMIT).to_a
+      Current.family.projects.underway.ordered.limit(Project::SUMMARY_LIMIT).to_a
     end
 end

@@ -1,5 +1,14 @@
 <%# locals: (project:) %>
 <%= render DS::Menu.new do |menu| %>
+  <% unless project.status == "active" %>
+    <% menu.with_item(variant: "button", text: t("projects.menu.resume"), href: status_project_path(project, status: "active"), icon: "play", method: :patch) %>
+  <% end %>
+  <% unless project.on_hold? %>
+    <% menu.with_item(variant: "button", text: t("projects.menu.hold"), href: status_project_path(project, status: "on_hold"), icon: "pause", method: :patch) %>
+  <% end %>
+  <% unless project.completed? %>
+    <% menu.with_item(variant: "button", text: t("projects.menu.complete"), href: status_project_path(project, status: "completed"), icon: "check", method: :patch) %>
+  <% end %>
   <% if project.archived? %>
     <% menu.with_item(variant: "button", text: t("projects.menu.unarchive"), href: unarchive_project_path(project), icon: "archive-restore", method: :patch) %>
   <% else %>

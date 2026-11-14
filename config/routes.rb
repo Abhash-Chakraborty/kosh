@@ -561,7 +561,10 @@ Rails.application.routes.draw do
     member do
       patch :archive
       patch :unarchive
+      patch :status, action: :update_status
     end
+    resources :itinerary_items, only: %i[new create edit update destroy], path: "itinerary"
+    resources :files, only: %i[create destroy], controller: "project_files"
   end
   patch "transactions/:transaction_id/project", to: "transaction_projects#update", as: :transaction_project
 

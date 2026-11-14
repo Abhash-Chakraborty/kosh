@@ -81,6 +81,64 @@ class ProjectsControllerTest < ActionDispatch::IntegrationTest
     assert_select "nav a[href='#{project_path(projects(:old_kitchen))}']", count: 0
   end
 
+  test "puts a project on hold, completes it and resumes it" do
+    patch status_project_url(@project, status: "on_hold")
+    assert_redirected_to project_url(@project)
+    assert @project.reload.on_hold?
+
+    patch status_project_url(@project, status: "completed")
+    assert @project.reload.completed?
+
+    patch status_project_url(@project, status: "active")
+    assert @project.reload.underway?
+  end
+
+  test "an unknown status is refused" do
+    patch status_project_url(@project, status: "abandoned")
+
+    assert_response :unprocessable_entity
+    assert_equal "active", @project.reload.status
+  end
+
+  test "the projects page groups projects by status" do
+    @family.projects.create!(name: "Shed", status: "on_hold")
+    @family.projects.create!(name: "Fence", status: "completed")
+
+    get projects_url
+
+    assert_select "section[data-project-status='active'] h2", text: "Underway"
+    assert_select "section[data-project-status='on_hold'] h2", text: "On hold"
+    assert_select "section[data-project-status='completed'] h2", text: "Completed"
+    assert_select "section[data-project-status='completed'] a", text: /Fence/
+  end
+
+  test "a completed project leaves Home's tabs but keeps its own" do
+    @project.set_status!("completed")
+
+    get root_url
+    assert_select "nav a[href='#{project_path(@project)}']", count: 0
+
+    get project_url(@project)
+    assert_select "nav a[aria-current='true'][href='#{project_path(@project)}']", text: "Lisbon trip"
+    assert_includes response.body, "Completed"
+  end
+
+  test "the edit form can change the status" do
+    patch project_url(@project), params: { project: { status: "on_hold" } }
+
+    assert @project.reload.on_hold?
+  end
+
+  test "says how far along a trip is" do
+    @project.update!(start_on: Date.current + 12, end_on: Date.current + 22)
+    get project_url(@project)
+    assert_select "p", text: /Starts in 12 days/
+
+    @project.update!(start_on: Date.current - 2, end_on: Date.current + 8)
+    get project_url(@project)
+    assert_select "p", text: /Day 3 of 11/
+  end
+
   test "the projects page says where each project stands" do
     ious(:dinner).update!(project: projects(:lisbon))
 

@@ -1,0 +1,25 @@
+<%# locals: (project:, item:) %>
+<%= styled_form_with model: [ project, item ], class: "space-y-4" do |f| %>
+  <% if item.errors.any? %>
+    <%= render "shared/form_errors", model: item %>
+  <% end %>
+
+  <section class="space-y-2">
+    <%= f.select :kind, itinerary_kind_options, { label: t("itinerary_items.form.kind") } %>
+    <%= f.text_field :title, label: t("itinerary_items.form.title"), placeholder: t("itinerary_items.form.title_placeholder"), required: true, autofocus: item.new_record?, maxlength: 255 %>
+    <div class="grid grid-cols-2 gap-2">
+      <%= f.date_field :starts_on, label: t("itinerary_items.form.starts_on"), required: true %>
+      <%= f.time_field :time_of_day, label: t("itinerary_items.form.time_of_day") %>
+    </div>
+    <%= f.date_field :ends_on, label: t("itinerary_items.form.ends_on") %>
+    <p class="text-xs text-secondary px-1"><%= t("itinerary_items.form.ends_on_hint") %></p>
+    <%= f.text_field :location, label: t("itinerary_items.form.location"), placeholder: t("itinerary_items.form.location_placeholder"), maxlength: 255 %>
+    <%= f.text_field :reference, label: t("itinerary_items.form.reference"), placeholder: t("itinerary_items.form.reference_placeholder"), maxlength: 255 %>
+    <%= f.text_area :notes, label: t("itinerary_items.form.notes"), rows: 2 %>
+  </section>
+
+  <div class="flex justify-end gap-2">
+    <%= render DS::Button.new(text: t("itinerary_items.form.cancel"), variant: :secondary, data: { action: "DS--dialog#close" }) %>
+    <%= render DS::Button.new(text: item.new_record? ? t("itinerary_items.form.create") : t("itinerary_items.form.save"), type: :submit) %>
+  </div>
+<% end %>

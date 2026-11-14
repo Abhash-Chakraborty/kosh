@@ -23,6 +23,67 @@ class ProjectTest < ActiveSupport::TestCase
     assert @project.errors.added?(:end_on, :before_start)
   end
 
+  test "has a known status and starts underway" do
+    project = @family.projects.create!(name: "Shed")
+    assert_equal "active", project.status
+    assert project.underway?
+
+    project.status = "paused"
+    assert_not project.valid?
+    assert project.errors.of_kind?(:status, :inclusion)
+  end
+
+  test "underway leaves out projects on hold, completed or archived" do
+    on_hold = @family.projects.create!(name: "Shed", status: "on_hold")
+    done = @family.projects.create!(name: "Fence", status: "completed")
+
+    underway = @family.projects.underway
+
+    assert_includes underway, @project
+    assert_not_includes underway, on_hold
+    assert_not_includes underway, done
+    assert_not_includes underway, projects(:old_kitchen)
+  end
+
+  test "completing a project without an end date ends it today" do
+    project = @family.projects.create!(name: "Shed", start_on: Date.current - 5)
+
+    project.set_status!("completed")
+
+    assert project.completed?
+    assert_equal Date.current, project.end_on
+  end
+
+  test "completing keeps an end date that is already set, and resuming keeps it too" do
+    ended = @project.end_on
+
+    @project.set_status!("completed")
+    assert_equal ended, @project.end_on
+
+    @project.set_status!("active")
+    assert @project.underway?
+    assert_equal ended, @project.end_on
+  end
+
+  test "knows where a day falls in its dates" do
+    project = @family.projects.new(name: "Trip", start_on: Date.new(2026, 11, 26), end_on: Date.new(2026, 12, 6))
+
+    assert_equal :upcoming, project.phase(Date.new(2026, 11, 14))
+    assert_equal :ongoing, project.phase(Date.new(2026, 11, 28))
+    assert_equal :past, project.phase(Date.new(2026, 12, 7))
+    assert_equal 3, project.day_number(Date.new(2026, 11, 28))
+    assert_nil project.day_number(Date.new(2026, 12, 7))
+    assert_equal 11, project.total_days
+    assert_nil @family.projects.new(name: "Open").phase
+  end
+
+  test "refuses files that are too large or of a type it doesn't keep" do
+    @project.files.attach(io: StringIO.new("x"), filename: "run.exe", content_type: "application/x-msdownload")
+
+    assert_not @project.valid?
+    assert @project.errors.of_kind?(:files, :wrong_type)
+  end
+
   test "a budget must be positive" do
     @project.budget = 0
 

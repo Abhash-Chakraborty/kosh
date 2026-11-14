@@ -1,0 +1,80 @@
+<%# locals: (project:, items:) %>
+<%# A trip's plan, day by day. %>
+<section id="itinerary" class="space-y-2 scroll-mt-4" aria-labelledby="itinerary-title">
+  <div class="flex items-center justify-between gap-2">
+    <h2 id="itinerary-title" class="text-sm font-medium text-primary"><%= t("projects.itinerary.title") %></h2>
+    <% unless Current.user.guest? %>
+      <%= render DS::Link.new(text: t("projects.itinerary.add"), variant: "ghost", size: "sm", icon: "plus", href: new_project_itinerary_item_path(project), frame: :modal) %>
+    <% end %>
+  </div>
+
+  <% if items.any? %>
+    <% places = itinerary_places(items) %>
+    <% if places.size > 1 %>
+      <p class="text-xs text-secondary"><%= places.join(" → ") %></p>
+    <% end %>
+    <div class="rounded-xl bg-container shadow-border-xs divide-y divide-primary">
+      <% itinerary_days(items).each do |date, day_items| %>
+        <div class="p-3 @lg:p-4 space-y-2" data-itinerary-day="<%= date.iso8601 %>">
+          <div class="flex items-center justify-between gap-2">
+            <h3 class="text-xs font-medium text-secondary uppercase"><%= itinerary_day_heading(project, date) %></h3>
+            <% unless Current.user.guest? %>
+              <%= render DS::Link.new(
+                    variant: "icon",
+                    icon: "plus",
+                    size: "sm",
+                    href: new_project_itinerary_item_path(project, date: date.iso8601),
+                    frame: :modal,
+                    aria: { label: t("projects.itinerary.add_on", date: iou_short_date(date)) },
+                    title: t("projects.itinerary.add_on", date: iou_short_date(date))
+                  ) %>
+            <% end %>
+          </div>
+          <ul class="space-y-3">
+            <% day_items.each do |item| %>
+              <li id="<%= dom_id(item) %>" class="flex items-start gap-3 min-w-0">
+                <span class="mt-0.5 shrink-0"><%= icon item.icon, size: "sm" %></span>
+                <div class="min-w-0 flex-1">
+                  <p class="text-sm font-medium text-primary">
+                    <% if item.time_of_day %>
+                      <span class="tabular-nums text-secondary font-normal"><%= item.time_of_day %></span>
+                    <% end %>
+                    <%= item.title %>
+                  </p>
+                  <p class="text-xs text-secondary"><%= itinerary_item_details(item) %></p>
+                  <% if item.notes %>
+                    <p class="text-xs text-subdued whitespace-pre-line"><%= item.notes %></p>
+                  <% end %>
+                </div>
+                <% unless Current.user.guest? %>
+                  <div class="shrink-0">
+                    <%= render DS::Menu.new do |menu| %>
+                      <% menu.with_item(variant: "link", text: t("projects.itinerary.edit"), href: edit_project_itinerary_item_path(project, item), icon: "pencil", frame: :modal) %>
+                      <% menu.with_item(
+                            variant: "button",
+                            text: t("projects.itinerary.delete"),
+                            href: project_itinerary_item_path(project, item),
+                            icon: "trash-2",
+                            method: :delete,
+                            confirm: CustomConfirm.new(
+                              destructive: true,
+                              title: t("projects.itinerary.delete_title"),
+                              body: t("projects.itinerary.delete_body", title: item.title),
+                              btn_text: t("projects.itinerary.delete")
+                            )
+                          ) %>
+                    <% end %>
+                  </div>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <%= render DS::Card.new(class: "p-4") do %>
+      <p class="text-sm text-secondary"><%= t("projects.itinerary.empty") %></p>
+    <% end %>
+  <% end %>
+</section>

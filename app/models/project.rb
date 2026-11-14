@@ -8,13 +8,28 @@ class Project < ApplicationRecord
   KINDS = %w[project trip].freeze
   KIND_ICONS = { "project" => "briefcase", "trip" => "plane" }.freeze
   COLORS = Category::COLORS
-  # How many active projects the Home and Reports summaries list.
+  # Where a project stands. Apart from being archived, which only puts it
+  # out of sight.
+  STATUSES = %w[active on_hold completed].freeze
+  # How many projects the Home and Reports summaries list.
   SUMMARY_LIMIT = 4
+  MAX_FILES = 40
+  MAX_FILE_SIZE = 25.megabytes
+  # Pictures, PDFs, text and office documents: tickets, bookings, receipts.
+  FILE_CONTENT_TYPES = %w[
+    image/jpeg image/png image/webp image/gif image/heic image/heif
+    application/pdf text/plain text/csv
+    application/msword application/vnd.openxmlformats-officedocument.wordprocessingml.document
+    application/vnd.ms-excel application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    application/vnd.ms-powerpoint application/vnd.openxmlformats-officedocument.presentationml.presentation
+  ].freeze
 
   belongs_to :family
   has_many :project_transactions, dependent: :delete_all
   has_many :transactions, through: :project_transactions, source: :assigned_transaction
   has_many :ious, dependent: :nullify
+  has_many :itinerary_items, dependent: :delete_all
+  has_many_attached :files
 
   monetize :budget
 
@@ -26,9 +41,13 @@ class Project < ApplicationRecord
   validates :budget, numericality: { greater_than: 0 }, allow_nil: true
   validates :color, format: { with: /\A#\h{6}\z/ }, allow_blank: true
   validates :lucide_icon, length: { maximum: 64 }, allow_blank: true
+  validates :status, inclusion: { in: STATUSES }
   validate :ends_after_start
+  validate :files_acceptable, if: -> { files.attached? }
 
   scope :active, -> { where(archived_at: nil) }
+  # Not archived and not on hold or completed: what Home lists.
+  scope :underway, -> { active.where(status: "active") }
   scope :archived, -> { where.not(archived_at: nil) }
   scope :ordered, -> { order(Arel.sql("projects.start_on IS NULL, projects.start_on DESC, projects.created_at DESC")) }
 
@@ -38,6 +57,49 @@ class Project < ApplicationRecord
 
   def archived?
     archived_at.present?
+  end
+
+  def underway?
+    status == "active" && !archived?
+  end
+
+  def on_hold?
+    status == "on_hold"
+  end
+
+  def completed?
+    status == "completed"
+  end
+
+  # Completing a project that has no end date ends it today, so its period
+  # is closed too.
+  def set_status!(new_status)
+    attributes = { status: new_status }
+    attributes[:end_on] = Date.current if new_status == "completed" && end_on.blank? && (start_on.nil? || start_on <= Date.current)
+    update!(attributes)
+  end
+
+  # Where today falls in the project's dates: :upcoming, :ongoing, :past, or
+  # nil without dates to go by.
+  def phase(today = Date.current)
+    if start_on && today < start_on
+      :upcoming
+    elsif end_on && today > end_on
+      :past
+    elsif start_on
+      :ongoing
+    end
+  end
+
+  # 1 on the first day; nil outside the project's dates.
+  def day_number(date)
+    return if start_on.nil? || date < start_on || (end_on && date > end_on)
+
+    (date - start_on).to_i + 1
+  end
+
+  def total_days
+    (end_on - start_on).to_i + 1 if start_on && end_on
   end
 
   def archive!
@@ -100,5 +162,14 @@ class Project < ApplicationRecord
       return if start_on.blank? || end_on.blank? || end_on >= start_on
 
       errors.add(:end_on, :before_start)
+    end
+
+    def files_acceptable
+      errors.add(:files, :too_many, count: MAX_FILES) if files.size > MAX_FILES
+
+      files.each do |file|
+        errors.add(:files, :too_large, size: MAX_FILE_SIZE / 1.megabyte) if file.blob.byte_size > MAX_FILE_SIZE
+        errors.add(:files, :wrong_type, name: file.blob.filename.to_s) unless file.blob.content_type.in?(FILE_CONTENT_TYPES)
+      end
     end
 end

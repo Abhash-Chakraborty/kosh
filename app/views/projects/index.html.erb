@@ -16,11 +16,18 @@
   <% end %>
 
   <% if @projects.any? %>
-    <div class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-3">
-      <% @projects.each do |project| %>
-        <%= render "projects/project", project: project, totals: project.totals(accounts: @accounts) %>
-      <% end %>
-    </div>
+    <% @project_groups.each do |status, projects| %>
+      <section class="space-y-2" data-project-status="<%= status %>">
+        <% if @project_groups.size > 1 %>
+          <h2 class="text-sm font-medium text-secondary"><%= t("projects.statuses.#{status}") %></h2>
+        <% end %>
+        <div class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-3">
+          <% projects.each do |project| %>
+            <%= render "projects/project", project: project, totals: project.totals(accounts: @accounts) %>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
   <% elsif @show_archived %>
     <%= render DS::Card.new(class: "p-4") do %>
       <p class="text-sm text-secondary"><%= t(".empty_archived") %></p>

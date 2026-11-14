@@ -1,0 +1,22 @@
+lisbon_flight:
+  project: lisbon
+  kind: flight
+  title: Flight to Lisbon
+  starts_on: <%= 20.days.ago.to_date %>
+  time_of_day: "09:30"
+  location: Lisbon Airport
+  reference: ABC123
+
+lisbon_hostel:
+  project: lisbon
+  kind: stay
+  title: Hostel in Alfama
+  starts_on: <%= 20.days.ago.to_date %>
+  ends_on: <%= 18.days.ago.to_date %>
+  location: Alfama
+
+lisbon_tram:
+  project: lisbon
+  kind: activity
+  title: Tram 28
+  starts_on: <%= 19.days.ago.to_date %>

@@ -1,0 +1,15 @@
+<%# locals: (project:, file:) %>
+<%= render DS::Button.new(
+      variant: "icon",
+      icon: "trash-2",
+      size: "sm",
+      href: project_file_path(project, file),
+      method: :delete,
+      aria_label: t("projects.files.delete_file", name: file.filename.to_s),
+      confirm: CustomConfirm.new(
+        destructive: true,
+        title: t("projects.files.delete_title"),
+        body: t("projects.files.delete_body", name: file.filename.to_s),
+        btn_text: t("projects.files.delete")
+      )
+    ) %>
