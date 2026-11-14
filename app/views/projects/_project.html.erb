@@ -6,6 +6,7 @@
       <p class="text-sm font-medium text-primary truncate"><%= project.name %></p>
       <p class="text-xs text-secondary truncate"><%= project_subtitle(project) %></p>
     </div>
+    <%= project_status_pill(project) %>
     <% if project.archived? %>
       <%= render DS::Pill.new(label: t("projects.project.archived"), tone: :gray) %>
     <% end %>

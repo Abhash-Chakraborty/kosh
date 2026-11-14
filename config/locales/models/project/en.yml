@@ -2,6 +2,7 @@
 en:
   activerecord:
     models:
+      itinerary_item: Itinerary item
       project: Project
     attributes:
       project:
@@ -13,6 +14,16 @@ en:
         name: Name
         notes: Notes
         start_on: Start date
+        status: Status
+      itinerary_item:
+        ends_on: Until
+        kind: Kind
+        location: Place
+        notes: Notes
+        reference: Booking reference
+        starts_on: Date
+        time_of_day: Time
+        title: What
       iou:
         project: Project
     errors:
@@ -21,3 +32,11 @@ en:
           attributes:
             end_on:
               before_start: can't be before the start date
+            files:
+              too_large: must be %{size} MB or smaller each
+              too_many: can't be more than %{count}
+              wrong_type: can't include %{name}. Pictures, PDFs, text and office documents are accepted
+        itinerary_item:
+          attributes:
+            ends_on:
+              before_start: can't be before the date

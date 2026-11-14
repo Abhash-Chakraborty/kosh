@@ -22,9 +22,88 @@ module ProjectsHelper
     end
   end
 
-  # Kind and dates for the line under a project's name.
+  # Kind, dates and where today falls in them, for the line under a
+  # project's name: "Trip · 26 Nov – 6 Dec · Starts in 12 days".
   def project_subtitle(project)
-    [ project_kind_label(project), project_dates(project) ].compact.join(" · ")
+    [ project_kind_label(project), project_dates(project), project_timeline(project) ].compact.join(" · ")
+  end
+
+  # "Starts in 12 days", "Day 3 of 11" or "Ended 6 Dec". Nil for a project
+  # that is on hold or completed (its status says more) or has no dates.
+  def project_timeline(project, today = Date.current)
+    return unless project.status == "active"
+
+    case project.phase(today)
+    when :upcoming
+      days = (project.start_on - today).to_i
+      days == 1 ? t("projects.timeline.starts_tomorrow") : t("projects.timeline.starts_in", count: days)
+    when :ongoing
+      if project.total_days
+        t("projects.timeline.day_of", day: project.day_number(today), total: project.total_days)
+      else
+        t("projects.timeline.day", day: project.day_number(today))
+      end
+    when :past
+      t("projects.timeline.ended", date: iou_short_date(project.end_on))
+    end
+  end
+
+  def project_status_options
+    Project::STATUSES.map { |status| [ t("projects.statuses.#{status}"), status ] }
+  end
+
+  # The pill beside a project that is on hold or completed; nothing while
+  # it is underway.
+  def project_status_pill(project)
+    return if project.status == "active"
+
+    render DS::Pill.new(label: t("projects.statuses.#{project.status}"), tone: project.completed? ? :green : :amber)
+  end
+
+  # An itinerary grouped by day: [ [ date, items ], ... ] in date order.
+  def itinerary_days(items)
+    items.group_by(&:starts_on).sort_by(&:first)
+  end
+
+  # "Thu 26 Nov · Day 1"; the day number only inside the trip's dates.
+  def itinerary_day_heading(project, date)
+    day = project.day_number(date)
+    heading = "#{I18n.l(date, format: "%a")} #{iou_short_date(date)}"
+    day ? t("projects.itinerary.day_heading", date: heading, day: day) : heading
+  end
+
+  # Kind, place and booking reference under an itinerary line. The place
+  # opens in a map.
+  def itinerary_item_details(item)
+    parts = [ t("itinerary_items.kinds.#{item.kind}") ]
+    parts << t("projects.itinerary.until", date: iou_short_date(item.ends_on)) if item.multi_day?
+    if item.location
+      parts << link_to(item.location, itinerary_map_url(item.location), target: "_blank", rel: "noopener noreferrer",
+        class: "underline underline-offset-2 hover:text-primary")
+    end
+    parts << t("projects.itinerary.reference", reference: item.reference) if item.reference
+    safe_join(parts, " · ")
+  end
+
+  def itinerary_map_url(place)
+    "https://www.google.com/maps/search/?api=1&query=#{ERB::Util.url_encode(place)}"
+  end
+
+  def itinerary_kind_options
+    ItineraryItem::KINDS.map { |kind| [ t("itinerary_items.kinds.#{kind}"), kind ] }
+  end
+
+  # The places a plan names, in the order it reaches them, each once.
+  def itinerary_places(items)
+    items.filter_map(&:location).uniq { |place| place.downcase }
+  end
+
+  # A thumbnail for a picture the server can resize; nil for other files.
+  def project_file_thumbnail(file)
+    return unless file.variable?
+
+    image_tag url_for(file.variant(resize_to_limit: [ 480, 480 ])), alt: file.filename.to_s, loading: "lazy",
+      class: "w-full h-full object-contain"
   end
 
   # Width of the spent share of a budget bar, capped at 100.
@@ -45,8 +124,12 @@ module ProjectsHelper
   end
 
   # Active projects for the strip that switches between Home and one project.
-  def project_switcher_projects
-    Current.family.projects.active.ordered.to_a
+  # Underway projects, plus the one being looked at if it is on hold,
+  # completed or archived.
+  def project_switcher_projects(current = nil)
+    projects = Current.family.projects.underway.ordered.to_a
+    projects << current if current && !projects.include?(current)
+    projects
   end
 
   # Where a project stands, for its line on Home and on the projects page:

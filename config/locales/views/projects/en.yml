@@ -4,6 +4,45 @@ en:
     kinds:
       project: Project
       trip: Trip
+    statuses:
+      active: Underway
+      on_hold: On hold
+      completed: Completed
+    timeline:
+      starts_tomorrow: Starts tomorrow
+      starts_in:
+        one: Starts in %{count} day
+        other: Starts in %{count} days
+      day_of: Day %{day} of %{total}
+      day: Day %{day}
+      ended: Ended %{date}
+    itinerary:
+      title: Itinerary
+      add: Add to itinerary
+      add_on: Add on %{date}
+      empty: Nothing planned yet. Add the trains, stays and things to do, day by day.
+      day_heading: "%{date} · Day %{day}"
+      until: until %{date}
+      reference: Ref %{reference}
+      edit: Edit
+      delete: Delete
+      delete_title: Remove this from the itinerary?
+      delete_body: '"%{title}" will be removed from the plan. Money already recorded stays.'
+    files:
+      title: Files
+      add: Add files
+      empty: No files yet. Keep pictures, quotes and receipts here.
+      empty_trip: No files yet. Keep tickets, bookings and pictures here.
+      limits: Up to %{count} files, %{size} MB each. Pictures, PDFs, text and office documents.
+      download: Download %{name}
+      delete: Delete
+      delete_file: Delete %{name}
+      delete_title: Delete this file?
+      delete_body: '"%{name}" will be deleted for good.'
+    update_status:
+      active: Project is underway again
+      on_hold: Project put on hold
+      completed: Project marked completed
     dates:
       from: From %{date}
       until: Until %{date}
@@ -82,6 +121,9 @@ en:
       archived_notice: Archived %{date}.
     menu:
       edit: Edit
+      resume: Resume
+      hold: Put on hold
+      complete: Mark completed
       archive: Archive
       unarchive: Restore
       delete: Delete
@@ -92,6 +134,7 @@ en:
       name: Name
       name_placeholder: Lisbon in May
       kind: Kind
+      status: Status
       color: Color
       start_on: Starts
       end_on: Ends
@@ -139,6 +182,50 @@ en:
       title: Projects
       empty: Track what a trip or a project costs.
       view_all: All projects
+  itinerary_items:
+    kinds:
+      train: Train
+      bus: Bus
+      flight: Flight
+      drive: Drive
+      stay: Stay
+      activity: Activity
+      food: Food
+      other: Other
+    form:
+      kind: Kind
+      title: What
+      title_placeholder: Train to Pondicherry
+      starts_on: Date
+      time_of_day: Time
+      ends_on: Until
+      ends_on_hint: Optional. For a stay or anything that runs over several days.
+      location: Place
+      location_placeholder: Pondicherry railway station
+      reference: Booking reference
+      reference_placeholder: PNR or booking number
+      notes: Notes
+      cancel: Cancel
+      create: Add
+      save: Save
+    new:
+      title: Add to itinerary
+    edit:
+      title: Edit itinerary
+    create:
+      success: Added to the itinerary
+    update:
+      success: Itinerary saved
+    destroy:
+      success: Removed from the itinerary
+  project_files:
+    create:
+      none_selected: Choose one or more files first.
+      success:
+        one: File added
+        other: "%{count} files added"
+    destroy:
+      success: File deleted
   transactions:
     selection_bar:
       add_to_project: Add to project

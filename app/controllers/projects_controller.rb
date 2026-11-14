@@ -1,16 +1,21 @@
-# Projects and trips. The index shows active ones (archived behind a toggle);
-# a project's page shows its totals, breakdowns, transactions and IOUs, over
-# every account the viewer can see or just one of them.
+# Projects and trips. The index shows them by status (archived behind a
+# toggle); a project's page shows its plan, files, totals, breakdowns,
+# transactions and IOUs, over every account the viewer can see or just one.
 class ProjectsController < ApplicationController
   ENTRY_LIMIT = 200
 
   before_action :require_non_guest!, except: %i[index show]
-  before_action :set_project, only: %i[show edit update destroy archive unarchive]
+  before_action :set_project, only: %i[show edit update destroy archive unarchive update_status]
 
   def index
     @show_archived = params[:archived] == "1"
     projects = Current.family.projects.ordered
     @projects = (@show_archived ? projects.archived : projects.active).to_a
+    # Underway first, then on hold, then completed.
+    @project_groups = Project::STATUSES.filter_map do |status|
+      group = @projects.select { |project| project.status == status }
+      [ status, group ] if group.any?
+    end
     @archived_count = Current.family.projects.archived.count
     @accounts = Current.user.accessible_accounts
 
@@ -29,6 +34,8 @@ class ProjectsController < ApplicationController
     @counted_entry_ids = @totals.entries.map(&:id).to_set
     @ious = @project.ious.includes(:account, :payments).by_due_date.to_a
     @ious = @ious.select { |iou| iou.account_id.nil? || iou.account_id == @account.id } if @account
+    @itinerary = @project.itinerary_items.chronological.to_a
+    @files = @project.files.includes(:blob).sort_by(&:created_at)
 
     @breadcrumbs = [ [ t("breadcrumbs.home"), root_path ], [ t("projects.index.title"), projects_path ], [ @project.name, nil ] ]
   end
@@ -68,6 +75,16 @@ class ProjectsController < ApplicationController
     redirect_to project_path(@project), notice: t(".success"), status: :see_other
   end
 
+  # Not named `status`: that is the controller's own response status.
+  def update_status
+    new_status = params[:status].presence_in(Project::STATUSES)
+    return head(:unprocessable_entity) unless new_status
+
+    @project.set_status!(new_status)
+    notice = { "active" => t(".active"), "on_hold" => t(".on_hold"), "completed" => t(".completed") }.fetch(new_status)
+    redirect_to project_path(@project), notice: notice, status: :see_other
+  end
+
   def destroy
     @project.destroy!
     redirect_to projects_path, notice: t(".success"), status: :see_other
@@ -79,7 +96,10 @@ class ProjectsController < ApplicationController
     end
 
     def project_params
-      params.require(:project).permit(:name, :kind, :color, :lucide_icon, :start_on, :end_on, :budget, :currency, :notes)
+      params.require(:project).permit(:name, :kind, :color, :lucide_icon, :start_on, :end_on, :budget, :currency, :notes).tap do |permitted|
+        status = params.dig(:project, :status).presence_in(Project::STATUSES)
+        permitted[:status] = status if status
+      end
     end
 
     def redirect_after_save(path, notice)

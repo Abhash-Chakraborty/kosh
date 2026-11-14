@@ -3,7 +3,10 @@
     <div class="flex items-center gap-3 min-w-0">
       <%= render DS::FilledIcon.new(icon: @project.icon, hex_color: @project.display_color, size: "lg") %>
       <div class="space-y-0.5 min-w-0">
-        <h1 class="text-xl lg:text-3xl font-medium text-primary truncate"><%= @project.name %></h1>
+        <div class="flex items-center gap-2 min-w-0">
+          <h1 class="text-xl lg:text-3xl font-medium text-primary truncate"><%= @project.name %></h1>
+          <%= project_status_pill(@project) %>
+        </div>
         <p class="text-sm text-secondary truncate"><%= project_subtitle(@project) %></p>
       </div>
     </div>
@@ -21,6 +24,10 @@
 
   <% if @project.archived? %>
     <%= render DS::Alert.new(message: t(".archived_notice", date: l(@project.archived_at.to_date, format: :long)), variant: :info) %>
+  <% end %>
+
+  <% if @project.trip? %>
+    <%= render "projects/itinerary", project: @project, items: @itinerary %>
   <% end %>
 
   <% if @accounts.size > 1 %>
@@ -106,6 +113,8 @@
       <% end %>
     <% end %>
   </section>
+
+  <%= render "projects/files", project: @project, files: @files %>
 
   <% if @project.notes.present? %>
     <section class="space-y-2">

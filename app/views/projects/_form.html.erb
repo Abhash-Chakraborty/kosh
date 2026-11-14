@@ -7,6 +7,9 @@
   <section class="space-y-2">
     <%= f.text_field :name, label: t("projects.form.name"), placeholder: t("projects.form.name_placeholder"), required: true, autofocus: project.new_record?, maxlength: 255 %>
     <%= f.select :kind, project_kind_options, { label: t("projects.form.kind") } %>
+    <% if project.persisted? %>
+      <%= f.select :status, project_status_options, { label: t("projects.form.status") } %>
+    <% end %>
 
     <fieldset class="space-y-1.5 px-1">
       <legend class="text-xs text-secondary mb-1.5"><%= t("projects.form.color") %></legend>
